@@ -68,6 +68,26 @@ For Regional vs Zonal: a **Regional RI** gives AZ and size flexibility within th
 
 ---
 
+## Placement groups (how EC2 instances are physically positioned)
+
+Placement groups control how EC2 instances are laid out on the underlying hardware. The exam tests which one fits a stated goal — **performance vs. resilience**:
+
+| Type | Layout | Use when |
+|------|--------|----------|
+| **Cluster** | Packs instances close together on the **same rack** in a single AZ | You need the **lowest network latency and highest throughput between instances** — HPC, tightly-coupled compute. Trade-off: if the rack fails, you can lose the whole group (no resilience). |
+| **Spread** | Places each instance on **distinct racks** (separate hardware, power, network), max **7 instances per AZ** | You have a small number of **critical instances that must not share a failure domain** — e.g., individual members of a cluster you can't afford to lose together. |
+| **Partition** | Groups instances into **partitions**, each on its own set of racks; up to 7 partitions per AZ, many instances each | **Large distributed/replicated workloads** that are partition-aware — HDFS, Cassandra, Kafka. A rack failure takes down at most one partition. |
+
+- Keyword "lowest latency / highest throughput between instances, HPC" → **Cluster**.
+- Keyword "few critical instances, isolate from each other's hardware failures" → **Spread** (7 per AZ max).
+- Keyword "large distributed data store (Hadoop/Cassandra/Kafka), partition-aware HA" → **Partition**.
+
+**EFA (Elastic Fabric Adapter)** is a network interface for HPC/ML that enables very low-latency, high-throughput inter-node communication (OS-bypass) — pair it with a cluster placement group. **Enhanced networking (ENA)** gives higher bandwidth and lower latency than standard, used by most modern instance types.
+
+**EC2 Hibernate** saves the in-memory (RAM) state to the EBS root volume on stop and restores it on start, so the instance resumes where it left off (faster than a cold boot) — useful for long-booting applications. The root volume must be encrypted, and there's a max hibernation duration.
+
+---
+
 ## Auto Scaling (ASG)
 
 An Auto Scaling Group maintains a desired number of EC2 instances across **multiple AZs**, automatically replacing failed instances and scaling the count up or down based on demand. It's the foundation of self-healing, elastic architectures.
@@ -162,3 +182,6 @@ Lambda can be configured to run inside a VPC, which is required when your functi
 | Route HTTP traffic by URL path or hostname | ALB |
 | Scale proactively for a predictable daily spike | Scheduled or Predictive scaling |
 | Per-socket/core licensing compliance | Dedicated Host |
+| Lowest inter-instance latency (HPC) | Cluster placement group (+ EFA) |
+| Isolate few critical instances from shared hardware failure | Spread placement group |
+| Partition-aware big-data cluster (Cassandra/HDFS/Kafka) | Partition placement group |

@@ -55,7 +55,10 @@ Federation lets users who exist outside of AWS (in your company's directory or o
 
 - **SAML 2.0** is used for enterprise identity federation (connecting your corporate Active Directory or Okta to AWS).
 - **OIDC** is used for web identity federation (letting users authenticated by Google, Facebook, etc. access AWS resources).
-- **Amazon Cognito** is the managed service for mobile and web application user management — it provides user pools (handling sign-up, sign-in, password reset) and identity pools (exchanging authenticated user tokens for temporary AWS credentials). Use Cognito when you have millions of end users authenticating through your app.
+- **Amazon Cognito** is the managed service for mobile and web application user management. It has two distinct pieces the exam likes to separate:
+  - **User Pools** = **authentication** (the directory). They handle sign-up, sign-in, MFA, password reset, and hosted UI, and can federate to Google/Facebook/SAML. The output is a signed JWT identifying the user. Think "who is this user, and let them log in." User Pools are also a native authorizer for **API Gateway**.
+  - **Identity Pools (Federated Identities)** = **authorization to AWS resources**. They take an authenticated token (from a User Pool, social login, or SAML) and exchange it via STS for **temporary AWS credentials** scoped by an IAM role — so the app can call S3, DynamoDB, etc. directly. Think "give this logged-in user limited AWS access."
+  - Use Cognito when you have up to millions of end users authenticating through your app. Keyword "let mobile app users sign in **and** get temporary AWS credentials" → User Pool (sign-in) **+** Identity Pool (credentials).
 - **STS (Security Token Service)** is the underlying AWS service that issues temporary credentials. `AssumeRole` and `AssumeRoleWithWebIdentity` are the two most common STS API calls you'll see in exam scenarios.
 
 - Keyword "millions of app users, social login, mobile/web app" → **Cognito**.

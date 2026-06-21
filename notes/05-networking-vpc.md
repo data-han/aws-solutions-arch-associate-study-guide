@@ -17,7 +17,27 @@ A **NAT Gateway** lets instances in a **private subnet initiate outbound connect
 
 **Route tables** control where network traffic from a subnet is directed. Every subnet is associated with a route table.
 
-An **ENI (Elastic Network Interface)** is a virtual network card — it gives an EC2 instance its IP address, security group memberships, and MAC address. An instance can have multiple ENIs.
+An **ENI (Elastic Network Interface)** is a virtual network card that lives in a **subnet** (so it is pinned to one AZ). It holds:
+
+- A **primary private IPv4** address (plus optional secondary private IPs)
+- An optional **Elastic/public IP** per private IP
+- A **MAC address**
+- One or more **security groups** — note that SGs attach to the *ENI*, not the instance. An instance "has a security group" because its ENI does.
+- A **source/destination check** flag (disable it on NAT instances or appliances that forward traffic on behalf of others)
+
+An ENI can be **detached and re-attached to another instance in the same AZ**, so its IP/MAC can "float" to a standby instance for quick failover. The primary ENI (eth0) can't be detached; secondary ENIs can. ENIs cannot cross AZs.
+
+**The mental model that ties it together:** whenever an AWS managed service needs to live inside your VPC's IP space, it does so by placing an **ENI in your subnet**. Interface VPC Endpoints (PrivateLink), RDS, ElastiCache, ELB nodes, NAT Gateway, EFS mount targets, Fargate tasks, and a VPC-configured Lambda are all just ENIs under the hood. If a question says "the service gets a private IP in your subnet," it's using an ENI.
+
+---
+
+### IPv6 and the egress-only internet gateway
+
+A VPC always has a private IPv4 CIDR; you can **also** add an IPv6 CIDR block. IPv6 addresses in AWS are **always public/globally-routable** — there's no concept of a "private" IPv6 range like there is with IPv4 (no NAT for IPv6).
+
+That creates a problem: how do you let IPv6 instances make **outbound** connections to the internet while staying **unreachable from inbound**? A NAT Gateway only works for IPv4. The answer is the **Egress-Only Internet Gateway (EIGW)** — it's the IPv6 equivalent of a NAT Gateway: it allows outbound IPv6 traffic from your instances and the return traffic, but blocks any internet-initiated inbound IPv6 connection.
+
+- Keyword "IPv6 instances need outbound internet but must block inbound" → **Egress-Only Internet Gateway** (NAT Gateway is IPv4-only).
 
 ---
 
@@ -50,10 +70,20 @@ An **ENI (Elastic Network Interface)** is a virtual network card — it gives an
 
 By default, when an EC2 instance in a private subnet calls an AWS service like S3 or DynamoDB, that traffic routes out through a NAT Gateway and over the internet. VPC Endpoints let that traffic stay entirely within the AWS network, improving security and potentially reducing cost.
 
-- **Gateway Endpoint** — supports **only S3 and DynamoDB**. It's added as an entry in your route table and is completely free to use. Traffic to S3 or DynamoDB is routed through the gateway automatically.
-- **Interface Endpoint (powered by PrivateLink)** — supports most other AWS services. It creates an ENI with a private IP address in your subnet, and DNS resolves the service's hostname to that private IP. There's an hourly charge plus a per-GB data charge.
+- **Gateway Endpoint** — supports **only S3 and DynamoDB**. It is added as an **entry in your route table** (an S3/DynamoDB *prefix list*) and is completely **free**. It uses **no ENI and no private IP** — it's pure routing. The catch: because it's just a route in *your* VPC's route table, it **only works from inside that VPC**. It can **not** be reached over Direct Connect/VPN (on-premises) or across VPC peering.
+- **Interface Endpoint (powered by PrivateLink)** — supports S3 and most other AWS services. It creates an **ENI with a private IP** in your subnet, and DNS resolves the service's hostname to that private IP. Because it's a real ENI/IP, it **can** be reached from **on-premises** (over DX/VPN) and from **peered VPCs**. There's an hourly charge plus a per-GB data charge.
 
-- Keyword "access S3 from a private subnet without a NAT Gateway" → **Gateway Endpoint** (free, simplest).
+**S3 specifically has both options** — and choosing between them is a common exam point:
+
+| You need to reach S3/DynamoDB privately from… | Use |
+|------------------------------------------------|-----|
+| EC2 **inside the VPC**, cheapest | **Gateway Endpoint** (free, no ENI) |
+| **On-premises** over Direct Connect / VPN, or a **peered VPC** | **Interface Endpoint / PrivateLink** (ENI-based; gateway endpoints can't be reached from outside the VPC) |
+
+Note the asymmetry: **DynamoDB only has a gateway endpoint** (no interface option), so you can't reach DynamoDB privately from on-premises the same way you can S3.
+
+- Keyword "access S3 from a private subnet without a NAT Gateway, cheapest" → **Gateway Endpoint** (free, no ENI).
+- Keyword "access S3 privately **from on-premises** over Direct Connect" → **Interface Endpoint (PrivateLink)** — a gateway endpoint can't be reached from outside the VPC.
 - Keyword "privately expose a service in one VPC to consumers in other VPCs without peering" → **PrivateLink**.
 
 ---
@@ -115,8 +145,10 @@ Enable **DNS resolution and DNS hostnames** in your VPC settings when using VPC 
 
 | Scenario | Answer |
 |----------|--------|
-| Private subnet instances need outbound internet | NAT Gateway |
-| Access S3 privately from a private subnet, avoid NAT cost | Gateway VPC Endpoint |
+| Private subnet instances need outbound internet (IPv4) | NAT Gateway |
+| IPv6 instances need outbound-only internet | Egress-Only Internet Gateway |
+| Access S3 privately from a private subnet, avoid NAT cost | Gateway VPC Endpoint (free, no ENI) |
+| Access S3 privately from on-premises (DX/VPN) or a peered VPC | Interface Endpoint / PrivateLink (ENI-based) |
 | Connect many VPCs and on-prem networks centrally | Transit Gateway |
 | Dedicated, consistent, low-latency on-prem connection | Direct Connect |
 | Quick encrypted hybrid connectivity | Site-to-Site VPN |

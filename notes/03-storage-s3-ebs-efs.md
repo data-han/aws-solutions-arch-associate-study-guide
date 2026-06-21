@@ -116,6 +116,12 @@ FSx is AWS's service for running popular third-party file system software as a f
 
 DataSync is a fast, online data transfer service for copying large amounts of data between on-premises storage and AWS (S3, EFS, FSx), or between AWS storage services. It handles encryption, data integrity validation, scheduling, and bandwidth throttling for you. Use DataSync for one-time migrations or ongoing scheduled sync jobs — situations where you want to move or continuously replicate data over the network.
 
+### AWS Transfer Family
+
+Transfer Family is a **fully managed SFTP / FTPS / FTP** (and AS2) service that lands files directly into **S3 or EFS**. The classic scenario: a partner or legacy system uploads files over SFTP, and you need that data in S3 without running and patching your own SFTP server fleet. You keep the existing SFTP workflow and credentials; AWS manages the server, scaling, and availability.
+
+- Keyword "partners upload via SFTP/FTPS, store in S3, no servers to manage" → **AWS Transfer Family** (don't confuse with DataSync, which is bulk AWS-managed sync, not a protocol endpoint for third parties).
+
 ### Snowball / Snowmobile
 
 Snowball and Snowmobile are physical devices for **offline** bulk data transfer. AWS ships you a hardware appliance, you load your data onto it locally, and then ship it back to AWS for ingestion. This is used when the dataset is so large (petabytes) or your network connection so slow that transferring over the internet would take weeks or months.
@@ -138,3 +144,4 @@ Snowball and Snowmobile are physical devices for **offline** bulk data transfer.
 | On-prem app needs cloud-backed storage | Storage Gateway |
 | Move large data online / scheduled sync | DataSync |
 | Offline bulk migration (slow network / huge data) | Snowball |
+| Partners upload via managed SFTP/FTPS into S3/EFS | AWS Transfer Family |

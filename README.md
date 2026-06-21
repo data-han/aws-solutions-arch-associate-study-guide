@@ -31,9 +31,9 @@ A self-contained study repo to pass the **SAA-C03** exam: concise scenario-focus
 
 ## How to use this repo
 
-1. **Read `notes/`** topic by topic. These are condensed — they assume you'll also watch a course / do hands-on. Focus on *when to use X vs Y*.
+1. **Read `notes/`** topic by topic (01–10). These are condensed — they assume you'll also watch a course / do hands-on. Focus on *when to use X vs Y*.
 2. **Drill `exam-facts/cheatsheet.md` and `service-comparisons.md`** — these are the decision tables the exam tests constantly. Review them daily before the exam.
-3. **Do `practice/` by domain**, then take **`practice/mock-exam-1.md`** under timed conditions (130 min). Review every wrong answer back to the relevant note.
+3. **Do `practice/` by domain**, then work the harder `exam-realistic-set-A/B/C.md`, then take **`mock-exam-1.md`** and **`mock-exam-2.md`** under timed conditions (130 min each). Review every wrong answer back to the relevant note.
 
 ### Suggested 4-week plan
 
@@ -41,8 +41,8 @@ A self-contained study repo to pass the **SAA-C03** exam: concise scenario-focus
 |------|------|
 | 1 | Notes 01–05 (IAM, compute, storage, DB, VPC) + domain-1 & domain-3 practice |
 | 2 | Notes 06–09 (resilience, decoupling, monitoring, cost) + domain-2 & domain-4 practice |
-| 3 | Re-read all cheatsheets; redo every previously-missed question; service-comparisons drills |
-| 4 | Full mock exam (timed) → review gaps → light re-read → sit exam |
+| 3 | Re-read all cheatsheets; note 10 (AI/ML extras); Set A/B/C harder drills; redo every previously-missed question |
+| 4 | Both full mock exams (timed) → review gaps → light re-read → sit exam |
 
 ---
 
@@ -59,11 +59,11 @@ A self-contained study repo to pass the **SAA-C03** exam: concise scenario-focus
 
 ## Contents
 
-- `notes/` — topic notes (01–09)
+- `notes/` — topic notes (01–10; note 10 covers AI/ML services + commonly-missed extras)
 - `exam-facts/cheatsheet.md` — high-yield facts, service limits, keyword map
 - `exam-facts/service-comparisons.md` — decision tables
 - `practice/domain1-4` — practice questions per domain (with explanations)
-- `practice/mock-exam-1.md` — full 65-question timed simulation
-- `practice/exam-realistic-set-A.md` & `set-B.md` — **harder, exam-fidelity** scenario questions (long multi-constraint stems; rationale for why each distractor fails). Do these once the domain drills feel easy.
+- `practice/mock-exam-1.md` & `mock-exam-2.md` — two full 65-question timed simulations (fresh, non-overlapping)
+- `practice/exam-realistic-set-A.md`, `set-B.md` & `set-C.md` — **harder, exam-fidelity** scenario questions (long multi-constraint stems; rationale for why each distractor fails). Set C targets commonly-missed topics (placement groups, AI/ML services, IPv6, Transfer Family, Cognito). Do these once the domain drills feel easy.
 
 > ⚠️ Practice questions here are original, written to mirror exam *style and reasoning*. They are not real exam questions. Don't rely on brain-dumps.

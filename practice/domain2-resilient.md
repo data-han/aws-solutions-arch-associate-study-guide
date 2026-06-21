@@ -1,7 +1,7 @@
 # Practice — Domain 2: Design Resilient Architectures (26%)
 
 > Answers + explanations at the bottom.
-
+1B, 2B, 3D, 4B, 5C, 6B, 7B, 8B, 9B, 10C
 ---
 
 **Q1.** A web tier on EC2 behind an ALB must survive the failure of an entire Availability Zone with no manual intervention. What design achieves this most simply?
