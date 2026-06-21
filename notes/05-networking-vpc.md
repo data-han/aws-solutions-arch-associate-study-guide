@@ -133,6 +133,63 @@ The key distinction from CloudFront: **CloudFront caches content** and is design
 
 ---
 
+## How a request actually flows — DNS, edge, and VPC routing
+
+Three things get called "routing" in AWS but they operate at completely different layers and never compete with each other:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  1. ROUTE 53 (DNS)        "What IP is example.com?"    │
+│     Answers before any packet is sent.                  │
+│     Operates on: domain names, on the public internet   │
+└────────────────────────┬────────────────────────────────┘
+                         │ browser now has the IP → opens TCP connection
+┌────────────────────────▼────────────────────────────────┐
+│  2. EDGE SERVICE          first AWS service hit         │
+│     CloudFront POP, Global Accelerator POP, or ALB      │
+│     IGW is transparent here — never a destination       │
+└────────────────────────┬────────────────────────────────┘
+                         │ packet is inside the VPC
+┌────────────────────────▼────────────────────────────────┐
+│  3. ROUTE TABLE (VPC routing)  "Where does this go?"   │
+│     IP prefix → local / IGW / NAT GW / TGW / endpoint  │
+│     Operates on: IP addresses only, no domain names     │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Route 53 and route tables have nothing to do with each other** despite the similar name. Route 53 = DNS (names → IPs). Route tables = IP forwarding rules inside AWS.
+
+### What is the first AWS service a user's request hits?
+
+After Route 53 returns an IP your browser makes a **TCP connection** (then TLS handshake for HTTPS) to whatever that IP belongs to. **IGW is never the destination** — it's a transparent door on the VPC wall that passes packets through to ENIs. NAT Gateway handles only outbound traffic from private subnets; inbound users never touch it.
+
+| Setup | First hit (edge) | Where TLS terminates |
+|-------|-----------------|----------------------|
+| CloudFront → ALB → EC2 | CloudFront edge POP (globally close to user) | CloudFront |
+| ALB → EC2 (no CloudFront) | ALB (in public subnet; IGW is transparent) | ALB |
+| Global Accelerator → ALB | GA anycast POP (static IPs, AWS backbone) | ALB |
+
+**Full flow example (CloudFront setup):**
+```
+User types example.com
+  → Route 53: returns CloudFront IP (via ALIAS record)
+  → TCP + TLS to CloudFront edge POP  ← FIRST HIT
+      cache hit? → serve immediately, never reaches origin
+      cache miss? → fetch from ALB over AWS backbone
+  → ALB (public subnet; IGW silently routes packet to ALB's ENI)
+  → EC2 (private subnet; route table: 10.0.0.0/16 → local)
+```
+
+### Choosing the edge service
+
+| Scenario | Edge |
+|----------|------|
+| Global users, HTTP/S, caching helps | **CloudFront** |
+| Static IPs, TCP/UDP, non-cacheable dynamic traffic | **Global Accelerator** |
+| Single-region, no caching needed | **ALB directly** (IGW handles entry, no extra edge layer) |
+
+---
+
 ## Monitoring & misc
 
 **VPC Flow Logs** capture metadata about IP traffic flowing through your VPC (source/destination IPs, ports, protocol, whether traffic was accepted or rejected). Flow logs can be sent to CloudWatch Logs or S3 and are used for network troubleshooting, security analysis, and compliance auditing. Note that they capture metadata, not the actual packet contents.
@@ -156,3 +213,5 @@ Enable **DNS resolution and DNS hostnames** in your VPC settings when using VPC 
 | Active-passive DNS failover for DR | Route 53 Failover routing |
 | Cache and deliver content globally | CloudFront |
 | Static anycast IP + multi-region failover for TCP/UDP | Global Accelerator |
+| What is the first service a user's request hits? | CloudFront (if used) → ALB → EC2; IGW is transparent, never the destination |
+| Inbound traffic from internet never touches… | NAT Gateway (outbound only) or IGW directly (just a pass-through) |
