@@ -79,6 +79,16 @@ Step Functions lets you coordinate multiple AWS services (Lambda, ECS tasks, SNS
 
 Use Step Functions when you have a multi-step process that needs to be orchestrated with conditional logic, retries, and visibility into where each execution is in the workflow — things that would be messy and fragile to manage manually in code.
 
+Step Functions has two workflow types with different trade-offs, and the exam tests which one to pick:
+
+- **Standard Workflows**: designed for long-running, mission-critical processes. They can run for up to **1 year**, guarantee **exactly-once** execution (each state transition is recorded and executed exactly once — if a step fails and retries, it does not accidentally run twice), and maintain a full, searchable execution history in the console for debugging and auditing. Standard workflows charge per state transition. Use them for business-critical processes like order fulfilment, employee onboarding, payment approvals, or any workflow where accidentally skipping or duplicating a step would cause a business problem.
+
+- **Express Workflows**: designed for high-volume, short-duration tasks. They can run for up to **5 minutes** and provide **at-least-once** execution semantics (in some failure scenarios, a step may execute more than once — your steps should be designed to handle duplicates). They are much cheaper per execution than Standard workflows, making them cost-effective for workloads that run thousands or millions of times per day — IoT event processing, mobile backend calls, streaming data processing pipelines.
+
+The exam will typically signal which type with keywords. "Long-running, exactly-once, audit trail, business process" → Standard. "High volume, sub-5-minute, cheap, at-scale" → Express.
+
+- Keyword "long-running critical business workflow up to a year, exactly-once execution" → Step Functions **Standard Workflow**.
+- Keyword "high-frequency, short-duration event processing, cost-effective at scale" → Step Functions **Express Workflow**.
 - Keyword "coordinate multiple steps, long-running workflow, visual orchestration" → **Step Functions**.
 
 ---

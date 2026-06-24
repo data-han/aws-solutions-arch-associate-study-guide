@@ -1,7 +1,7 @@
 # Practice — Domain 3: Design High-Performing Architectures (24%)
 
 > Answers + explanations at the bottom.
-
+1A, 2B, 3B, 4B, 5B?, 6B, 7C, 8B, 9D? B, 10B?
 ---
 
 **Q1.** A read-heavy application puts excessive load on an RDS database with repeated identical queries. What improves read performance with the least application change?

@@ -12,6 +12,9 @@ The exam frames cost questions as: "which option meets the stated requirements a
 
 - **Spot Instances** — up to ~90% cheaper than On-Demand. The catch is AWS can reclaim them with a 2-minute notice, so they're only suitable for fault-tolerant, stateless, or interruptible workloads like batch jobs, data processing, and CI pipelines.
 - **Savings Plans / Reserved Instances** — up to ~72% off for a 1- or 3-year commitment. Right for workloads that run 24/7 with predictable resource needs. See note 02 for the full RI vs Savings Plans comparison.
+
+**Reserved Instance discount sharing across the organization:** When your AWS accounts are managed under an AWS Organization with consolidated billing, Reserved Instances and Savings Plans purchased in any account automatically share their discount across all accounts in the organization. AWS applies the discount to whichever account has matching usage, prioritizing the account that purchased the RI. This means you do not need to buy separate RIs in each team account — purchasing from the central management account lets the discount flow to wherever the actual usage is. One RI commitment can cover usage across 20 accounts simultaneously.
+
 - **On-Demand** — no commitment, pay by the hour or second. Right for unpredictable, short-lived, or spiky workloads. Most expensive per unit of compute.
 
 **Serverless** options (Lambda, Fargate, DynamoDB On-Demand, Aurora Serverless) charge you only for what you actually use — when idle, you pay nothing. For spiky or low-traffic workloads, this is often cheaper than running an instance 24/7 even if the instance is small.
@@ -42,6 +45,12 @@ For file storage, configure EFS lifecycle policies to move files not accessed re
 
 Using **Read Replicas** to handle read-heavy traffic is more cost-effective than scaling up the primary instance size, because you can add read capacity incrementally and remove it when not needed.
 
+**Athena query cost — convert to Parquet:** Amazon Athena charges based on the amount of data it **scans** per query. You pay per terabyte scanned, regardless of how much data the query actually returns. The most effective way to cut this cost is to store your data in a **columnar format like Parquet** instead of row-based formats like CSV or JSON.
+
+Here is why it helps: in a CSV file, each row contains all the columns. If your query only needs 3 of 50 columns, Athena still reads the entire file to find those 3 columns. In Parquet, columns are stored separately — Athena can physically skip the 47 columns it doesn't need and read only the 3 it does. This typically reduces the amount of data scanned (and therefore the cost) by **3 to 5 times**. The standard approach is to run an **AWS Glue ETL job** that reads your CSV data and writes it back as Parquet, then point Athena at the Parquet files. **Partitioning** your S3 data (organizing it into date- or region-based folder prefixes) provides additional savings by letting Athena skip entire folders that don't match your query filters.
+
+- Keyword "reduce Athena query costs, data is stored as CSV or JSON in S3" → convert to **Parquet** using an AWS Glue ETL job.
+
 ---
 
 ## Network cost levers (data transfer is an easy-to-overlook cost)
@@ -53,6 +62,10 @@ Data transfer within the same AZ over private IPs is generally free. **Cross-AZ 
 **NAT Gateway** charges by the hour and by GB of data processed. If you have multiple instances downloading data from S3, using S3 Gateway Endpoints eliminates NAT charges for that traffic entirely.
 
 **CloudFront** caches responses at edge locations, reducing the volume of requests that hit your origin and the amount of data transferred from your origin to CloudFront (CloudFront's distribution pricing is often cheaper than direct origin data transfer).
+
+**Transit Gateway vs VPC Peering cost:** If you only need to connect 2 or 3 VPCs, VPC Peering is nearly always cheaper — the peering connection itself has no hourly charge, and you only pay the standard data transfer rate. Transit Gateway charges an hourly fee per VPC attachment plus a per-GB data processing fee. For small-scale connectivity, this makes TGW more expensive. But when you have many VPCs or need transitive routing, TGW's hub-and-spoke model is worth the cost because the alternative (dozens of point-to-point peering connections) becomes unmanageable. Rule of thumb: fewer than 5 VPCs = peering; 10 or more VPCs = Transit Gateway.
+
+**NLB cross-zone load balancing cost:** Unlike ALB (where cross-zone load balancing is always on and free), NLB has cross-zone load balancing **disabled by default**. When you enable it, cross-AZ data transfer charges apply — traffic between the NLB node in one AZ and a target in a different AZ incurs per-GB charges. This is a hidden cost trap: the feature seems like a pure availability improvement, but it adds a data transfer cost that can grow large in high-traffic environments.
 
 When latency permits, keep traffic within a single Region and ideally within a single AZ to minimize transfer costs.
 

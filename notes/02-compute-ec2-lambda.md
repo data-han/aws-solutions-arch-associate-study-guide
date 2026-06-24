@@ -124,6 +124,8 @@ AWS offers three types of load balancers, each operating at a different network 
 
 All load balancers support cross-zone load balancing (distributing traffic evenly across instances in all AZs) and health checks (automatically removing targets that fail checks from the rotation).
 
+**NLB cross-zone load balancing — a hidden cost trap:** For ALB, cross-zone load balancing is always enabled and the cross-AZ data transfer is included at no extra charge. For NLB, cross-zone load balancing is **disabled by default**, and when you turn it on, AWS charges for the data transferred between the NLB node and the targets located in other AZs. This catches teams off guard — they enable cross-zone load balancing on an NLB expecting only an availability improvement, and then see unexpected data transfer charges on their bill.
+
 - Keyword "static IP address for a load balancer" → **NLB**.
 - Keyword "route by URL path or hostname" → **ALB**.
 
@@ -139,6 +141,13 @@ Lambda functions are triggered by events from many AWS services: API Gateway (HT
 
 Lambda can be configured to run inside a VPC, which is required when your function needs to connect to private resources like an RDS database in a private subnet. **Lambda Layers** let you package shared libraries or dependencies separately and reuse them across multiple functions.
 
+**Lambda in a VPC — a very common exam trap:** You might assume that placing a Lambda function in a public subnet (one with a route to an Internet Gateway) would give the function internet access, just like an EC2 instance in a public subnet. This is completely wrong and catches many people out. Lambda ENIs (the network interfaces that Lambda creates inside your subnet) **never receive a public IP address**, so placing a Lambda function in a public subnet provides absolutely no internet access.
+
+The correct architecture when you need a Lambda function to access both private VPC resources (like RDS) AND the internet (like an external API) is: place the Lambda function in a **private subnet**, and deploy a **NAT Gateway in a public subnet**. The private subnet routes outbound internet traffic to the NAT Gateway, the NAT Gateway has a public IP, and internet traffic flows through it. The full chain is: Lambda → private subnet → route table → NAT Gateway → Internet Gateway → internet.
+
+To be clear: Lambda in a public subnet = no internet. Lambda in a private subnet + NAT Gateway = internet access.
+
+- Keyword "Lambda in VPC needs to call an external API or reach the internet" → place Lambda in a **private subnet** + NAT Gateway in a public subnet. A public subnet alone does NOT work.
 - Keyword "run code without managing servers / event-driven / minimize operational overhead" → **Lambda**.
 - Long-running tasks (over 15 minutes), always-on services, or workloads requiring persistent local state → **not** Lambda; use ECS/Fargate or EC2.
 

@@ -61,6 +61,42 @@ These extend note 04's data section — lighter weight but exam-relevant:
 
 ---
 
+## Migration services
+
+When moving servers and databases from on-premises to AWS, AWS provides specialized tools for each stage: discovering what you have, moving it efficiently, and tracking progress centrally.
+
+**AWS Application Discovery Service** helps you plan a migration before it starts. It automatically inventories your on-premises data center — discovering servers, their hardware specifications (CPU, memory, disk), running processes, and the network connections between them. This dependency mapping is especially valuable: you need to know which application servers communicate with which databases before you start moving things, so you can migrate interdependent systems together rather than breaking connections mid-migration. Trigger: "discover and map on-premises servers before migrating to AWS", "identify server dependencies for migration planning."
+
+**AWS Application Migration Service (MGN)** is the recommended tool for lifting and shifting physical servers and virtual machines to EC2. It works by installing a lightweight agent on each source server that continuously replicates the server's disk blocks to AWS in the background. When you are ready to cut over, MGN launches an exact EC2 replica of the server. The actual cutover typically causes less than 15 minutes of downtime. Trigger: "lift-and-shift on-premises servers to EC2", "rehost servers with minimal downtime and no re-architecting."
+
+**AWS Migration Hub** provides a single centralized dashboard where you can track the progress of all your migrations, regardless of which tools are being used — MGN, AWS Database Migration Service, or third-party tools. Instead of logging into each tool separately to check status, Migration Hub aggregates everything into one status view showing which servers are being discovered, which are replicating, which are ready to cut over, and which are complete. Trigger: "track all migration progress from one central place."
+
+---
+
+## Governance and compliance appendix services
+
+These services appear on the exam mostly as distractors, but occasionally one of them is the correct answer. Understanding the one-sentence purpose of each is sufficient.
+
+**AWS Artifact** is a self-service portal where you can download AWS's own compliance documentation — things like AWS's SOC 1, SOC 2, and SOC 3 reports, PCI DSS attestation of compliance, ISO 27001 certificates, and other third-party audits of AWS's infrastructure. This is specifically for when your auditor needs proof that AWS's data centers are certified, not for proving your own compliance. Think of it as "download the report card that AWS got from its own auditors." Trigger: "our auditor needs AWS's own SOC 2 report", "download AWS compliance certifications."
+
+**AWS Audit Manager** is the opposite of Artifact — instead of AWS's compliance evidence, Audit Manager helps you collect and organize your own compliance evidence. It continuously monitors your AWS account and automatically maps resource configurations, CloudTrail activity logs, and Security Hub findings to recognized compliance frameworks like PCI DSS, HIPAA, SOC 2, and GDPR. Before an audit, instead of spending weeks manually gathering screenshots and export files as evidence, Audit Manager has already assembled it on an ongoing basis. Trigger: "automate evidence collection for our own compliance audit", "continuously gather proof that our environment meets PCI DSS requirements."
+
+**AWS Service Catalog** lets a central IT or platform team publish a curated library of approved CloudFormation templates — called "products" — that end users can deploy themselves through a self-service portal without needing full CloudFormation permissions or deep AWS expertise. The platform team controls what is available and what guardrails apply (instance types, regions, encryption settings); business teams browse the approved catalog and deploy what they need in a governed way. Trigger: "self-service portal for approved infrastructure", "governed provisioning without giving developers full CloudFormation access."
+
+**AWS License Manager** helps you track and enforce software license compliance, particularly for BYOL (Bring Your Own License) scenarios. Some software vendors license their products by the physical core or socket count (Oracle Database, Microsoft SQL Server) rather than by the number of instances. License Manager tracks how many vCPUs your EC2 instances are using and can block you from launching additional instances that would exceed your purchased license count — preventing accidental license violations that could result in expensive audit findings. Trigger: "track BYOL per-core or per-socket license usage on EC2", "prevent license violations."
+
+---
+
+## Additional integration and media services
+
+**Amazon AppFlow** is a fully managed, no-code integration service that transfers data between popular SaaS applications (Salesforce, ServiceNow, Slack, Zendesk, SAP) and AWS services (S3, Redshift). You configure a "flow" entirely through the console — choose the source application, the destination, define any field mappings or filters, and set a schedule. No Lambda functions, no custom ETL code, no infrastructure to maintain. This is specifically for when a business team wants data from an external SaaS application to land in AWS with minimal engineering effort. Trigger: "transfer Salesforce records to S3 without writing any code", "SaaS application data into AWS, no engineering effort required."
+
+**Amazon Kinesis Video Streams** is a managed service for ingesting, storing, and processing live video streams from connected devices — security cameras, drones, dash cameras, industrial sensors, and smartphones. The video data can be fed in real time into machine learning models (such as Amazon Rekognition Video) for object detection, anomaly detection, or facial analysis, or stored for later playback and offline analysis. Trigger: "ingest live video from cameras or IoT devices for ML analysis or storage."
+
+**Amazon Elastic Transcoder** is a media conversion service that converts video files stored in S3 into formats and resolutions suitable for playback on specific devices — phones, tablets, web browsers, and smart TVs. For example, you might upload a high-resolution source video and use Elastic Transcoder to create multiple lower-resolution versions for users on mobile data connections. Note: AWS Elastic Transcoder is the older service; AWS Elemental MediaConvert is the newer, more powerful successor recommended for new projects. However, Elastic Transcoder still appears on the SAA-C03 exam for basic format conversion scenarios. Trigger: "convert uploaded video files to formats that play on phones, tablets, and browsers."
+
+---
+
 ## Keyword map (AI / analytics quick reference)
 
 | Scenario | Answer |
@@ -81,3 +117,13 @@ These extend note 04's data section — lighter weight but exam-relevant:
 | Full-text search / log analytics | OpenSearch |
 | Managed Kafka | MSK |
 | Cloud virtual desktops for employees | WorkSpaces |
+| Transfer SaaS (Salesforce/ServiceNow) data to S3, no code | AppFlow |
+| Ingest live video from devices/cameras for ML or storage | Kinesis Video Streams |
+| Convert uploaded video to play on phones/tablets/browsers | Elastic Transcoder |
+| Download AWS's own SOC 2 / PCI / ISO compliance reports | AWS Artifact |
+| Automate YOUR own compliance evidence collection | AWS Audit Manager |
+| Lift-and-shift servers to EC2 with minimal downtime | MGN (Application Migration Service) |
+| Discover and map on-premises servers before migration | Application Discovery Service |
+| Track all migration progress from one central dashboard | Migration Hub |
+| Self-service portal for approved CloudFormation templates | Service Catalog |
+| Track and enforce BYOL per-core software licenses on EC2 | License Manager |

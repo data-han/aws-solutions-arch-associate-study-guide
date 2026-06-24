@@ -31,6 +31,18 @@ The **effective permission** for any action is the **intersection** of all appli
 
 SCPs are important to understand: they do not grant permissions. They only define the maximum that identities within an account *can* have. An SCP allowing everything still requires IAM policies to actually grant access.
 
+### ABAC — Attribute-Based Access Control
+
+Traditional IAM access control is called RBAC (Role-Based Access Control) — you create a separate role or policy for each job function, project, or team. This works fine at small scale, but if you have 100 teams and 50 projects, you quickly end up creating and maintaining thousands of policies.
+
+**ABAC (Attribute-Based Access Control)** is an alternative approach where you use **tags** to control access dynamically. You tag your AWS resources (EC2 instances, S3 buckets, RDS databases) and your IAM identities (roles, users) with matching attributes, then write a single policy that grants access when the tags on the resource and the principal match.
+
+For example: tag every EC2 instance with `Project: Alpha` and tag the Alpha engineering team's IAM role with `Project: Alpha`. Then write a policy with a condition that says "allow actions on any EC2 instance where the resource's Project tag matches the caller's Project tag." The Alpha team can access Alpha instances automatically — and when you start Project Beta, you just tag the new resources appropriately, without writing any new policies.
+
+ABAC scales much better for large organizations because adding a new project or team only requires tagging new resources and assigning tags to principals — no new IAM policies or roles needed.
+
+- Keyword "manage access at scale across many teams or projects", "grant access based on resource tags, reduce number of IAM policies" → **ABAC with IAM tag conditions**.
+
 ---
 
 ## AWS Organizations
@@ -38,6 +50,20 @@ SCPs are important to understand: they do not grant permissions. They only defin
 AWS Organizations lets you centrally manage multiple AWS accounts under one umbrella. Key benefits are **consolidated billing** (all accounts on one bill, and you get volume discount pricing based on combined usage) and the ability to apply **SCPs** as guardrails across entire accounts or Organizational Units (OUs).
 
 Best practice is to separate accounts by environment (separate production and development accounts) with a dedicated management account that doesn't run workloads.
+
+### SCP region restriction — the NotAction trap
+
+A common governance requirement is restricting which AWS regions an organization is allowed to use. You do this with an SCP that denies API calls in non-approved regions. However, there is a critical trap: some AWS services are **global** — they do not operate in any specific region at all. These include IAM, CloudFront, Route 53, STS (Security Token Service), Support, and AWS Organizations itself.
+
+If you write a blanket Deny statement that covers all API actions with a region condition, you accidentally block these global services too — breaking IAM, preventing certificate management, and stopping CloudFront. The fix is to use the IAM policy element called **`NotAction`**.
+
+`NotAction` means "apply this Deny to everything **except** the listed actions." By listing the global services in the `NotAction` block, you exclude them from the restriction. All other service APIs are still blocked in non-approved regions, but global services continue to work normally.
+
+In plain language: instead of saying "deny all actions in bad regions," you say "deny all actions in bad regions, but don't apply this to IAM, CloudFront, Route 53, STS, Support, or Organizations."
+
+Also important: the **management account of an AWS Organization is never affected by SCPs at all** — SCPs don't apply to the management account, no matter what policies are in place.
+
+- Keyword "SCP to restrict regions without breaking IAM or CloudFront" → use `NotAction` in the SCP Deny statement to exclude global services.
 
 ---
 
@@ -73,6 +99,12 @@ KMS offers three key types: **AWS managed keys** (AWS creates and rotates them a
 
 Automatic key rotation is available for CMKs. If your application calls KMS so frequently that it hits API rate limits, you can implement **data key caching** — reuse a data key for a short period rather than calling KMS on every encrypt/decrypt operation.
 
+**KMS key policy — a rule beginners often miss:** Every KMS key has a **key policy** attached directly to it, which is a resource-based policy separate from any IAM identity policies. The critical rule is that **IAM policies alone are never sufficient to grant access to a KMS key**. For a role or user to actually use a KMS key, two conditions must both be true at the same time: (1) the key policy must allow that identity, and (2) the IAM policy must also grant the relevant KMS permissions. If either is missing, access is denied.
+
+When you create a customer-managed key (CMK), AWS automatically adds a default root statement to the key policy. This statement grants the account's root user full access and — importantly — allows IAM policies in the account to manage access to the key. You should **never remove this default root statement**. If you do, IAM policies stop working for that key entirely, and if all the named principals in the key policy are then deleted, the key becomes permanently inaccessible. The only recovery path is contacting AWS Support, which takes time and is not guaranteed to succeed quickly.
+
+- Keyword "IAM policy grants kms:Decrypt but the user still gets 'access denied'" → the key policy is missing the required permission; IAM policy alone is not enough for KMS.
+
 **CloudHSM** provides a dedicated, single-tenant hardware security module that you control entirely. Unlike KMS (where AWS manages the hardware), with CloudHSM you hold the keys and AWS cannot access them. Use it when regulations require customer-controlled key custody or FIPS 140-2 Level 3 compliance.
 
 - Keyword "dedicated HSM / regulatory key custody / FIPS 140-2 L3" → **CloudHSM**.
@@ -93,9 +125,25 @@ Automatic key rotation is available for CMKs. If your application calls KMS so f
 
 **WAF (Web Application Firewall)** operates at Layer 7 (HTTP/HTTPS) and protects against web attacks like SQL injection, XSS, and bad bots. You attach it to CloudFront, an ALB, API Gateway, or AppSync.
 
+**IMDSv2 (Instance Metadata Service version 2)** addresses a specific and important attack type. Every EC2 instance has access to a special internal IP address (`169.254.169.254`) called the instance metadata endpoint. Your application code queries this endpoint to find out things about the instance itself — its region, its instance ID, and most importantly, the temporary IAM role credentials that give your code permission to call AWS services. This is the mechanism that lets code on EC2 work without hardcoded access keys.
+
+The danger is an attack called **SSRF (Server-Side Request Forgery)**. If your web application fetches a URL supplied by a user (or follows an HTTP redirect), an attacker can point that URL to `169.254.169.254`. Your application dutifully fetches it, the metadata service returns the IAM role credentials, and the attacker captures them from the response — giving them temporary access to your AWS resources.
+
+IMDSv2 closes this hole by requiring a **session token** before any metadata can be retrieved. To get a session token, the caller must first make a specific PUT request to a particular path. Because SSRF attacks typically work by getting the victim application to follow a URL (a GET-style operation), they generally cannot perform this preliminary PUT step. No token means no metadata. You enforce IMDSv2 by setting `HttpTokens=required` in your EC2 launch template or instance configuration, or by using an IAM condition to require it.
+
+- Keyword "SSRF attack stealing EC2 instance role credentials via the metadata service" → enforce **IMDSv2** (`HttpTokens=required`).
+
 **Shield Standard** is free and automatically protects all AWS customers against common Layer 3 and Layer 4 DDoS attacks. **Shield Advanced** is a paid upgrade that adds Layer 7 DDoS mitigation, cost protection during attacks, and access to AWS's DDoS Response Team (DRT).
 
-**AWS Network Firewall** is a managed, stateful firewall service for your VPC — more powerful than NACLs and designed for filtering and inspecting traffic at scale.
+**AWS Network Firewall** is a managed, stateful firewall service for your VPC — more powerful than NACLs and designed for filtering and inspecting traffic at scale. It can inspect and filter traffic at the VPC level, filter outbound requests by domain name, and block specific threat signatures.
+
+**AWS Firewall Manager** is a centralized management service that sits above individual security services like WAF, Shield Advanced, and Network Firewall. Without Firewall Manager, if you want WAF rules on every Application Load Balancer across 50 AWS accounts, an administrator in each account would need to manually configure it — and any new ALBs created later in those accounts would not automatically get the rules. Firewall Manager lets you define a security policy once at the AWS organization level, and it automatically enforces that policy across all accounts in the organization, including accounts added in the future and new resources created in existing accounts.
+
+- Keyword "enforce WAF rules or Shield protections across all accounts automatically", "org-wide firewall policy that applies to new resources" → **AWS Firewall Manager**.
+
+**AWS Client VPN** is a managed VPN service for giving individual remote users secure access to your VPC. It is based on the OpenVPN protocol, meaning standard OpenVPN client software works with it. Unlike Site-to-Site VPN (which connects an entire office network or data center to AWS as a fixed tunnel), Client VPN is for individual people — a developer working from home who needs to reach a private RDS database, or a consultant who needs temporary access to an internal API. Each user connects from their laptop, gets authenticated, and receives access to the resources their IAM permissions allow.
+
+- Keyword "remote employees need to access private VPC resources from home", "individual user VPN into the VPC" → **AWS Client VPN**. (Distinct from Site-to-Site VPN, which is network-to-network, not user-to-network.)
 
 **GuardDuty** is a threat detection service that analyzes VPC Flow Logs, DNS query logs, and CloudTrail events using machine learning to identify suspicious behavior — things like unusual API calls, instances communicating with known malicious IPs, or credential misuse. No agents required — it works entirely from existing log sources.
 
@@ -125,3 +173,9 @@ Automatic key rotation is available for CMKs. If your application calls KMS so f
 | Filter SQL injection on a web app | WAF |
 | Centralize login across many accounts | IAM Identity Center |
 | Customer-controlled key custody / dedicated HSM | CloudHSM |
+| SSRF attack stealing EC2 role credentials via metadata | Enforce IMDSv2 (HttpTokens=required) |
+| Enforce WAF/Shield rules across all org accounts automatically | AWS Firewall Manager |
+| Individual remote employees need VPN access to the VPC | AWS Client VPN |
+| Grant access based on resource tags, scale to many teams | ABAC with IAM tag conditions |
+| SCP restricts regions without breaking IAM or CloudFront | SCP with NotAction listing global services |
+| IAM grants KMS permission but access still denied | Check the KMS key policy — IAM alone is insufficient |

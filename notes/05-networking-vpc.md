@@ -64,6 +64,24 @@ That creates a problem: how do you let IPv6 instances make **outbound** connecti
 - Keyword "quick, encrypted hybrid connection" → **Site-to-Site VPN**.
 - Direct Connect takes weeks to provision — use a VPN as the interim solution while waiting, or as a failover backup.
 
+**VPC Peering vs Transit Gateway — cost and scale comparison:** VPC Peering connections have **no hourly infrastructure charge** — you only pay the standard per-GB data transfer rate for traffic flowing through the connection. Transit Gateway charges you a separate **hourly fee per VPC attachment** plus a **per-GB data processing fee**. For a small number of VPCs (say, 2–4), VPC Peering is almost always cheaper. However, VPC Peering is non-transitive and the number of connections grows quadratically as VPCs increase (10 VPCs fully meshed = 45 peering connections). Transit Gateway solves both problems with a hub-and-spoke model, and its cost is justified once you have enough VPCs or routing complexity.
+
+- Keyword "cheapest way to connect 2 or 3 VPCs" → **VPC Peering** (no hourly fee, just data transfer).
+- Keyword "connect many VPCs, transitive routing, hub-and-spoke at scale" → **Transit Gateway**.
+
+### AWS RAM — sharing VPC resources across accounts
+
+**AWS Resource Access Manager (RAM)** lets you share specific AWS resources that you own with other AWS accounts — accounts inside your AWS Organization or even external accounts. The most common exam scenario is **shared VPC subnets**.
+
+Here is the problem RAM solves: if you follow the best practice of giving each team its own separate AWS account for security isolation, each account would normally need its own VPC, subnets, NAT Gateways, and Transit Gateway attachments. This creates duplicated networking infrastructure and costs across many accounts.
+
+With RAM, a central networking account creates one VPC with well-designed subnets, then uses RAM to share specific subnets with each team account. The team accounts can launch EC2 instances, RDS databases, and other resources directly into those shared subnets — as if the subnet belonged to their own account — without owning or controlling the underlying VPC.
+
+A second common scenario is sharing a **Transit Gateway**: one central account creates and owns it, then shares it via RAM across the organization. All other accounts attach their own VPCs to the shared Transit Gateway.
+
+- Keyword "share a VPC subnet across multiple AWS accounts, central networking team" → **AWS RAM**.
+- Keyword "share a Transit Gateway across all org accounts without each account creating their own" → **AWS RAM**.
+
 ---
 
 ## VPC Endpoints (access AWS services without going through the internet)
@@ -115,10 +133,25 @@ CloudFront is AWS's Content Delivery Network. It caches copies of your content a
 
 CloudFront can serve content from multiple **origin types**: an S3 bucket, an ALB, an EC2 instance, or any HTTP endpoint. When a user requests content, CloudFront checks whether it has a cached copy at the nearest edge location. If it does (a cache hit), it serves it immediately without touching the origin. If not (a cache miss), it fetches from the origin, caches the response, and serves it.
 
-**OAC (Origin Access Control)** or the older OAI (Origin Access Identity) restricts an S3 bucket so that only CloudFront can access it — preventing users from bypassing CloudFront and accessing the S3 bucket directly.
+**OAC (Origin Access Control)** or the older OAI (Origin Access Identity) restricts an S3 bucket so that only CloudFront can access it — preventing users from bypassing CloudFront and accessing the S3 bucket directly. OAC controls access to the origin (your S3 bucket) but does not control which end users can access your CloudFront distribution. For restricting end-user access to specific content, you use Signed URLs or Signed Cookies.
+
+**CloudFront Signed URLs and Signed Cookies** both restrict which authenticated users can access content through your distribution — for example, only paying subscribers can watch your video library. The difference is the scope of what they protect:
+
+- **Signed URL**: grants a specific user access to **one single file** for a defined time window. You generate the signed URL on your backend server after the user is authenticated, and only that URL (with its cryptographic signature) will be served by CloudFront. Use a Signed URL when you need to give a user temporary access to one specific asset — for example, a purchased e-book download link, a generated PDF report, or a time-limited video file.
+
+- **Signed Cookie**: grants a user access to **multiple files or an entire protected section** of your distribution at once. After the user logs in, your backend sets a signed cookie in their browser. While the cookie is valid, the user can access any content that falls within the cookie's policy — for example, all content under `/members/` or all videos in a subscription library. Use a Signed Cookie when a user needs access to many files, because generating a separate Signed URL for each file in a 1,000-video library would be impractical.
+
+- Keyword "restrict CloudFront content to paying subscribers or authenticated users" → **Signed URLs** (for one file) or **Signed Cookies** (for many files or a whole section).
 
 CloudFront integrates with **WAF** for Layer 7 protection at the edge, **ACM** for TLS certificates (important: for CloudFront, the certificate must be in the **us-east-1** region even if your content is elsewhere), and **Lambda@Edge / CloudFront Functions** for running lightweight code at the edge (e.g., request manipulation, URL rewrites, authentication checks).
 
+**CloudFront Price Classes** let you limit which edge locations serve your distribution. By default, CloudFront uses all edge locations worldwide — including more expensive locations in South America and Australia. If your users are concentrated in North America and Europe, you are paying for edge infrastructure in regions where none of your users are. Price Classes let you opt out of the more expensive edge regions:
+
+- **Price Class 100** — US, Canada, and Europe only. The lowest cost option. Choose this when your entire user base is in North America and Europe and you want to minimize CloudFront charges.
+- **Price Class 200** — US, Canada, Europe, Asia, Middle East, and Africa. A middle ground.
+- **Price Class All** — Every edge location globally, including South America and Australia. Highest cost, but best performance for users anywhere in the world.
+
+- Keyword "reduce CloudFront cost, users are only in the US and Europe" → **Price Class 100**.
 - Keyword "global low-latency content delivery / reduce origin load" → **CloudFront**.
 
 ---

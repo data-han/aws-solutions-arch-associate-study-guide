@@ -24,6 +24,15 @@ S3 offers multiple storage tiers — you choose based on how often you expect to
 
 **Lifecycle policies** let you define rules that automatically transition objects between storage classes (e.g., move to Standard-IA after 30 days, then to Glacier after 90) or expire (delete) objects entirely after a set time — this lets you manage cost without manual intervention.
 
+**Glacier Flexible Retrieval speed tiers** — when you need to retrieve data from Glacier Flexible Retrieval, you choose how fast you want it, and faster retrieval costs more per GB:
+
+- **Expedited retrieval**: your data is returned within **1–5 minutes**. This is the most expensive retrieval option. Use it when an urgent and unexpected need arises — for example, a regulator requests a specific archived file immediately and it cannot wait hours.
+- **Standard retrieval**: your data is returned within **3–5 hours**. This is the default option and is appropriate for most planned restore operations — for example, restoring a database backup for a scheduled disaster recovery drill.
+- **Bulk retrieval**: your data is returned within **5–12 hours**. This is the cheapest retrieval option, suitable for large-scale operations where timing is not critical — for example, migrating an entire archive to a new storage system.
+
+Note that **Glacier Instant Retrieval** is a different storage class entirely — it gives you millisecond retrieval at all times (like standard S3 classes), so you don't choose a retrieval tier for it. The retrieval tiers above only apply to Glacier Flexible Retrieval.
+
+- Keyword "archive data, need it back urgently within minutes" → **Expedited** retrieval from Glacier Flexible.
 - Keyword "unknown access pattern, optimize cost automatically" → **Intelligent-Tiering**.
 - Keyword "cheapest archival, retrieval in hours OK" → **Glacier Deep Archive**.
 
@@ -33,7 +42,21 @@ S3 offers multiple storage tiers — you choose based on how often you expect to
 
 **Encryption at rest** has three server-side options: **SSE-S3** (AWS manages everything with S3-owned keys — now the default), **SSE-KMS** (AWS KMS manages the keys, giving you audit trails via CloudTrail and the ability to set key policies), and **SSE-C** (you provide your own key with each request; S3 uses it but never stores it). Client-side encryption is also possible if you encrypt before uploading.
 
-**Versioning** keeps every version of every object, protecting against accidental overwrites and deletes. Once enabled, deleting an object just adds a delete marker — previous versions remain and can be restored. **MFA Delete** adds an extra layer requiring MFA to permanently delete a version. **Object Lock** enforces WORM (write-once-read-many) protection — objects can't be overwritten or deleted for a defined retention period, used for compliance and legal hold scenarios.
+**S3 Bucket Keys** solve a specific cost and throughput problem that arises when SSE-KMS is enabled on a busy S3 bucket. Normally, every single object PUT and GET operation with SSE-KMS requires a separate API call to AWS KMS to generate or use a data encryption key. For a bucket receiving millions of uploads per day, this creates a massive number of KMS API calls, which both consume your KMS request quota and generate per-call KMS charges that can become significant.
+
+S3 Bucket Keys fix this by generating a single key at the bucket level that lives inside S3. Instead of calling KMS for every individual object, S3 uses this bucket-level key to derive data keys for objects locally, only calling KMS occasionally to refresh the bucket-level key. This reduces the number of direct KMS API calls by approximately 99%. Importantly, your objects are still protected by SSE-KMS — the encryption quality does not change, only how often S3 calls KMS.
+
+- Keyword "high KMS API charges from S3 traffic", "S3 SSE-KMS hitting KMS request rate limits" → enable **S3 Bucket Keys**.
+
+**Versioning** keeps every version of every object, protecting against accidental overwrites and deletes. Once enabled, deleting an object just adds a delete marker — previous versions remain and can be restored. **MFA Delete** adds an extra layer requiring MFA to permanently delete a version. Versioning is a prerequisite for enabling S3 Replication and Object Lock.
+
+**Object Lock** enforces WORM (write-once-read-many) protection — objects cannot be overwritten or deleted for a defined retention period. There are two modes, and the exam tests which one to use:
+
+- **Governance mode** protects objects from most users, but users who have a specific IAM permission (`s3:BypassGovernanceRetention`) can still delete the object or change the retention settings. This is useful for testing retention policies or for scenarios where authorized administrators occasionally need to override the protection. Think of it as "protected by default, but an admin can unlock it."
+
+- **Compliance mode** makes the protection absolute. Nobody can delete the object or shorten the retention period until it expires — not the bucket owner, not the root account, not AWS. This is the mode for strict regulatory requirements (financial records laws like SEC 17a-4, healthcare compliance like HIPAA, etc.) where you need to prove to an external auditor that it was physically impossible for anyone to tamper with the data.
+
+- Keyword "WORM compliance, regulatory requirement, prove records cannot be deleted or altered" → **Object Lock in Compliance mode**.
 
 **Replication**: **CRR (Cross-Region Replication)** copies objects to a bucket in a different AWS region — useful for disaster recovery or reducing read latency for geographically distributed users. **SRR (Same-Region Replication)** copies to a bucket in the same region — useful for log aggregation or keeping a separate dev copy. Both require versioning enabled on source and destination.
 
