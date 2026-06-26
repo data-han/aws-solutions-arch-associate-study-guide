@@ -61,6 +61,36 @@ If you write a blanket Deny statement that covers all API actions with a region 
 
 In plain language: instead of saying "deny all actions in bad regions," you say "deny all actions in bad regions, but don't apply this to IAM, CloudFront, Route 53, STS, Support, or Organizations."
 
+**Example — the broken version:**
+
+```json
+{
+  "Effect": "Deny",
+  "Action": "*",
+  "Resource": "*",
+  "Condition": {
+    "StringNotEquals": { "aws:RequestedRegion": "ap-southeast-1" }
+  }
+}
+```
+
+You intend this to block everything outside Singapore. But when a developer calls `iam:CreateUser`, that request has no region — IAM is global. The condition asks "is the region NOT `ap-southeast-1`?" and since there is no region, the answer is effectively yes → Deny fires → IAM is blocked. Nobody can create users, attach policies, or assume roles.
+
+**Example — the correct version:**
+
+```json
+{
+  "Effect": "Deny",
+  "NotAction": ["iam:*", "sts:*", "cloudfront:*", "route53:*", "support:*"],
+  "Resource": "*",
+  "Condition": {
+    "StringNotEquals": { "aws:RequestedRegion": "ap-southeast-1" }
+  }
+}
+```
+
+`NotAction` carves out the global services entirely — the region condition never applies to them. Everything else is still blocked outside Singapore.
+
 Also important: the **management account of an AWS Organization is never affected by SCPs at all** — SCPs don't apply to the management account, no matter what policies are in place.
 
 - Keyword "SCP to restrict regions without breaking IAM or CloudFront" → use `NotAction` in the SCP Deny statement to exclude global services.
