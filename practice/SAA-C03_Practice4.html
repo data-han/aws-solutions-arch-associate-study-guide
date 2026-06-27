@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAA-C03 · Hard Mode — 25 Questions</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f7f6f3; --card:#ffffff; --ink:#15140f; --line:#dcd8cc; --muted:#7d7668;
+  --crimson:#9b1c1c; --crimson-soft:#fbeaea;
+  --green:#15693c; --green-soft:#e7f3ec;
+  --slate:#283447; --slate-soft:#e9edf3;
+  --serif:'Newsreader',serif; --sans:'Public Sans',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.65}
+
+.mast{max-width:880px;margin:0 auto;padding:40px 28px 24px;border-bottom:4px double var(--ink)}
+.mast-row{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap}
+.mast-eyebrow{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--crimson);margin-bottom:6px}
+.mast h1{font-family:var(--serif);font-size:36px;font-weight:700;line-height:1.05;letter-spacing:-.01em}
+.mast-sub{margin-top:8px;font-size:13px;color:var(--muted);max-width:560px}
+.scorecard{border:2px solid var(--ink);border-radius:10px;padding:12px 22px;text-align:center;background:var(--card);min-width:140px}
+.sc-num{font-family:var(--serif);font-size:34px;font-weight:700;line-height:1;color:var(--crimson)}
+.sc-lbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+
+.ctl{max-width:880px;margin:0 auto;padding:14px 28px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;position:sticky;top:0;background:var(--bg);z-index:40;border-bottom:1px solid var(--line)}
+.cbtn{font-family:var(--sans);font-size:11.5px;font-weight:600;padding:6px 13px;border-radius:6px;border:1.5px solid var(--line);background:var(--card);color:var(--muted);cursor:pointer;transition:all .15s}
+.cbtn:hover{border-color:var(--ink);color:var(--ink)}
+.cbtn.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.ctl-gap{flex:1}
+.cbtn.go{background:var(--crimson);border-color:var(--crimson);color:#fff}
+.cbtn.go:hover{background:#7a1414}
+
+.prog{max-width:880px;margin:0 auto;height:3px;background:var(--line)}
+.prog-f{height:100%;background:var(--crimson);transition:width .4s;width:0%}
+
+.list{max-width:880px;margin:0 auto;padding:24px 24px 80px;display:flex;flex-direction:column;gap:16px}
+
+.qc{background:var(--card);border:1.5px solid var(--line);border-radius:12px;overflow:hidden;transition:border-color .2s}
+.qc:hover{border-color:var(--muted)}
+.qc.ok{border-left:5px solid var(--green)}
+.qc.bad{border-left:5px solid var(--crimson)}
+.qc.hide{display:none}
+
+.qh{padding:18px 22px;cursor:pointer;display:flex;gap:14px;align-items:flex-start;user-select:none}
+.qn{font-family:var(--serif);font-size:22px;font-weight:700;font-style:italic;color:var(--line);min-width:36px;line-height:1.2;transition:color .2s}
+.qc:hover .qn{color:var(--crimson)}
+.qhr{flex:1}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.pill{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:12px;border:1px solid}
+.p-w{border-color:#c9a227;background:#faf4e1;color:#8a6d00}
+.p-d{border-color:var(--line);background:var(--bg);color:var(--muted)}
+.p-mr{border-color:var(--crimson);background:var(--crimson-soft);color:var(--crimson)}
+.qs{font-family:var(--serif);font-size:15.5px;line-height:1.7;color:var(--ink)}
+.ch{font-size:17px;color:var(--muted);transition:transform .2s;padding-top:4px}
+.qc.open .ch{transform:rotate(180deg)}
+
+.qb{display:none;border-top:1.5px solid var(--line)}
+.qc.open .qb{display:block}
+.opts{padding:16px 22px 2px;display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:11px;padding:11px 15px;border:1.5px solid var(--line);border-radius:9px;cursor:pointer;transition:all .15s;align-items:flex-start}
+.opt:hover{border-color:var(--slate);background:var(--slate-soft)}
+.opt.sel{border-color:var(--slate);background:var(--slate-soft)}
+.opt.rv-ok{border-color:var(--green);background:var(--green-soft);cursor:default}
+.opt.rv-bad{border-color:var(--line);opacity:.42;cursor:default}
+.ol{font-family:var(--serif);font-weight:700;font-style:italic;font-size:14px;color:var(--muted);min-width:17px}
+.opt.rv-ok .ol{color:var(--green)}
+.ot{font-size:14px;line-height:1.55}
+
+.sw{padding:16px 22px}
+.sb{width:100%;padding:11px;background:var(--bg);border:1.5px solid var(--line);border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .2s;letter-spacing:.02em}
+.sb:hover{border-color:var(--crimson);color:var(--crimson);background:var(--crimson-soft)}
+.sb.done{opacity:.4;cursor:default}
+
+.ex{display:none;padding:0 22px 22px}
+.qc.open.rev .ex{display:block}
+.ex-h{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border-top:1.5px solid var(--line);padding-top:16px;margin-bottom:10px}
+.ex-rows{display:flex;flex-direction:column;gap:6px;margin-bottom:13px}
+.ex-row{display:flex;gap:11px;padding:9px 13px;border-radius:7px;font-size:13.5px;line-height:1.6;align-items:flex-start}
+.ex-row.ok{background:var(--green-soft)}
+.ex-row.bad{background:var(--bg)}
+.el{font-family:var(--serif);font-weight:700;font-style:italic;font-size:13px;min-width:17px}
+.ex-row.ok .el{color:var(--green)}
+.ex-row.bad .el{color:var(--muted)}
+.et{color:#55504a}
+.et strong{color:var(--ink)}
+.kr{background:#fdf6ec;border:1.5px solid #e8d4ae;border-radius:8px;padding:11px 15px;font-size:13px;color:#7a5410;line-height:1.6;font-weight:500}
+.kr::before{content:'◆ ';color:#c9a227}
+
+#stb{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--ink);color:#fff;border:none;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#stb.v{opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+
+<div class="mast">
+  <div class="mast-row">
+    <div>
+      <div class="mast-eyebrow">SAA-C03 · Hard Mode</div>
+      <h1>25 Discrimination Questions</h1>
+      <div class="mast-sub">Longer scenarios. Two plausible answers. Targeted at your weak areas: multi-response completeness, KMS vs Secrets Manager, scaling policies, permissions boundaries, SCP exclusions — plus appendix services as answers and distractors.</div>
+    </div>
+    <div class="scorecard">
+      <div class="sc-num" id="sn">0/0</div>
+      <div class="sc-lbl">Correct / Done</div>
+    </div>
+  </div>
+</div>
+
+<div class="ctl">
+  <button class="cbtn on" onclick="filt('all',this)">All 25</button>
+  <button class="cbtn" onclick="filt('w',this)">Weak Areas</button>
+  <button class="cbtn" onclick="filt('a',this)">Appendix Services</button>
+  <button class="cbtn" onclick="filt('disc',this)">Discrimination</button>
+  <div class="ctl-gap"></div>
+  <button class="cbtn" onclick="rst()">Reset</button>
+  <button class="cbtn" onclick="revAll()">Reveal all</button>
+  <button class="cbtn go" onclick="shuf()">⇄ Shuffle</button>
+</div>
+<div class="prog"><div class="prog-f" id="pf"></div></div>
+
+<div class="list" id="list"></div>
+<button id="stb" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const Q=[
+// cat: 'w' = weak area, 'a' = appendix service, 'disc' = discrimination
+{id:0,cat:'w',t:'mc',tag:'Weak Area · SCP Global Services',
+stem:'A security team is implementing an SCP to restrict all activity in a member account to the eu-west-1 and eu-central-1 regions for GDPR compliance. After deploying an SCP that denies all actions where aws:RequestedRegion is not in the allowed list, users report they can no longer manage IAM roles, view Route 53 hosted zones, or access AWS Support — even though these were supposed to remain available. What change fixes the SCP while maintaining the regional restriction?',
+opts:{A:'Change the SCP condition from StringNotEquals to StringNotEqualsIfExists so the condition is skipped when no region is present in the request.',B:'Modify the SCP to use NotAction instead of Action, excluding global services such as iam:*, route53:*, support:*, cloudfront:*, and organizations:* from the deny statement.',C:'Attach the SCP to a child OU instead of the root OU so the management account is exempted.',D:'Add an explicit Allow statement for IAM, Route 53, and Support actions, since explicit allows override denies in SCP evaluation.'},
+correct:['B'],
+exp:{A:'StringNotEqualsIfExists changes behavior when the key is absent — but aws:RequestedRegion is always present in requests, including to global services (it resolves to us-east-1 for most of them). The deny would still fire on global services.',B:'Global services (IAM, Route 53, CloudFront, Support, Organizations, STS, WAF for CloudFront) operate from us-east-1 regardless of user intent. A region-restriction SCP must use NotAction to carve these service actions out of the deny statement, otherwise blocking us-east-1 blocks all global services. This is the documented AWS pattern.',C:'Moving the SCP changes which accounts it applies to — it does not fix the global services problem for the accounts still covered.',D:'SCPs do not work this way — an explicit Deny in any applicable SCP always wins. Allow statements cannot override a Deny.'},
+rule:'Region-restriction SCPs MUST exclude global services via NotAction (iam, route53, cloudfront, support, organizations, sts...). Global services resolve to us-east-1 and get caught by naive region denies. Explicit Deny always wins in SCPs.'},
+
+{id:1,cat:'w',t:'mr',tag:'Weak Area · Permissions Boundary Delegation',
+stem:'A platform team wants to delegate IAM role creation to development teams across the organization without risking privilege escalation. Developers must be able to create roles for their applications, but: (1) created roles must never exceed a security-team-defined permission ceiling, and (2) developers must not be able to remove or modify that ceiling on roles they create. Which TWO policy controls implement this requirement? (Choose TWO)',
+opts:{A:'An identity policy on developer roles allowing iam:CreateRole and iam:AttachRolePolicy ONLY when the request includes the approved permissions boundary, enforced with the iam:PermissionsBoundary condition key.',B:'An identity policy on developer roles that denies iam:DeleteRolePermissionsBoundary and iam:PutRolePermissionsBoundary on the roles they create.',C:'An SCP that denies iam:CreateRole entirely for developer accounts.',D:'An AWS Config rule that checks for roles created without a permissions boundary and triggers automatic deletion.',E:'A resource policy on each created role restricting modifications.'},
+correct:['A','B'],
+exp:{A:'The iam:PermissionsBoundary condition key in the developers\' identity policy means role creation only succeeds if the approved boundary ARN is attached at creation time. Developers literally cannot create an unbounded role.',B:'Without this, a developer could create a properly-bounded role and then strip the boundary afterwards. Denying DeleteRolePermissionsBoundary (and PutRolePermissionsBoundary to swap in a weaker one) closes the escalation path.',C:'Denying iam:CreateRole entirely defeats the delegation requirement — developers need to create roles.',D:'Config with auto-remediation is detective with a remediation window — an over-privileged role could be assumed and used before deletion. Not a preventive control.',E:'IAM roles do not have resource policies controlling who modifies them — role modification is governed by identity policies and trust policies, not resource policies.'},
+rule:'Safe IAM delegation requires BOTH: (1) condition forcing boundary attachment at creation (iam:PermissionsBoundary), AND (2) deny on removing/replacing the boundary afterwards. Missing either leaves an escalation path. Classic multi-response completeness trap.'},
+
+{id:2,cat:'w',t:'mr',tag:'Weak Area · Secrets Architecture',
+stem:'A company runs 40 microservices on ECS Fargate. The services consume: (a) ~300 non-sensitive configuration values (feature flags, endpoint URLs, timeouts) that change occasionally, and (b) 12 database credentials that compliance requires to be rotated every 30 days automatically. The team wants the lowest-cost solution that meets all requirements. Which TWO services should be used, and for what? (Choose TWO)',
+opts:{A:'Store the 300 configuration values in AWS Systems Manager Parameter Store (Standard tier, free).',B:'Store all 312 values in AWS Secrets Manager for consistency and a single API surface.',C:'Store the 12 database credentials in AWS Secrets Manager with automatic rotation enabled.',D:'Store the 12 database credentials in Parameter Store SecureString with a custom Lambda rotation function.',E:'Store all 312 values in AWS KMS as encrypted key material.'},
+correct:['A','C'],
+exp:{A:'Parameter Store Standard tier is free for up to 10,000 parameters. Non-sensitive config with no rotation requirement is exactly its use case. Putting 300 config values in Secrets Manager would cost ~$120/month ($0.40/secret) for no benefit.',B:'Consistent but wasteful — 300 config values × $0.40/month = $120/month of unnecessary spend, violating the lowest-cost requirement.',C:'Secrets Manager provides native, fully-managed rotation for RDS/Aurora credentials — no custom code, meets the 30-day compliance requirement. 12 secrets × $0.40 = ~$4.80/month, justified by the rotation requirement.',D:'Possible, but you must write, maintain, secure, and monitor a custom Lambda rotation function for 12 credentials — operational burden that Secrets Manager eliminates natively for marginal cost.',E:'KMS stores encryption keys, not application secrets or configuration. Fundamental category error.'},
+rule:'Cost-optimal secrets architecture: Parameter Store (free) for config + non-rotating values; Secrets Manager ($0.40/secret/mo) ONLY where native rotation is required. Never pay Secrets Manager prices for feature flags.'},
+
+{id:3,cat:'w',t:'mc',tag:'Weak Area · Scaling Policy Selection',
+stem:'A ticketing platform experiences two distinct load patterns: (1) predictable daily cycles peaking at lunchtime, and (2) sudden unpredictable spikes when a major event goes on sale, where traffic increases 20x within 90 seconds. During recent on-sales, target tracking scaling could not add capacity fast enough and users saw errors for 6-8 minutes. The events team knows the on-sale time at least one week in advance. What is the MOST effective scaling configuration?',
+opts:{A:'Switch from target tracking to step scaling with aggressive steps (add 10 instances when CPU > 60%, 20 more when CPU > 75%).',B:'Enable predictive scaling so machine learning forecasts the on-sale spikes from historical patterns.',C:'Keep target tracking for daily cycles and add scheduled scaling actions that pre-provision the required capacity 15 minutes before each known on-sale time.',D:'Increase the Auto Scaling group maximum capacity and reduce the CloudWatch alarm evaluation period to 10 seconds.'},
+correct:['C'],
+exp:{A:'Step scaling is still reactive — it waits for the CPU alarm to breach, then instances take 3-5 minutes to launch and warm. A 20x spike in 90 seconds outruns any reactive policy.',B:'Predictive scaling learns from recurring historical patterns (daily/weekly cycles). One-off event on-sales at arbitrary times are precisely what ML forecasting cannot predict — there is no recurring pattern to learn.',C:'The on-sale time is known a week in advance — this is the textbook case for scheduled scaling. Pre-provisioning 15 minutes early means full capacity is warm before the spike hits. Target tracking continues handling the ordinary daily cycle. Known future event = scheduled, not predicted.',D:'A higher max and faster alarms help marginally but instance launch + warm-up time still loses the 90-second race. The spike must be pre-empted, not reacted to.'},
+rule:'Scaling policy selection: KNOWN future event = Scheduled. RECURRING historical pattern = Predictive. Steady-state = Target Tracking. Reactive policies always lose to spikes faster than instance warm-up time.'},
+
+{id:4,cat:'w',t:'mc',tag:'Weak Area · Beanstalk vs Lambda',
+stem:'A company has a monolithic Java Spring Boot web application currently running on-premises. It serves steady traffic 24/7, holds long-lived WebSocket connections, and the team wants to migrate to AWS with minimal code changes and minimal infrastructure management. The team does not want to manage load balancers, auto scaling configuration, or OS patching directly. Which service best fits?',
+opts:{A:'Refactor the application into AWS Lambda functions behind API Gateway.',B:'Deploy the application to AWS Elastic Beanstalk using the Java platform with a managed Application Load Balancer and managed updates enabled.',C:'Run the application on a single large EC2 instance with an Elastic IP.',D:'Containerize the application and run it on a self-managed Kubernetes cluster on EC2.'},
+correct:['B'],
+exp:{A:'Lambda is wrong on three counts: a monolith requires major refactoring (violates minimal code changes), Lambda has a 15-minute execution cap (incompatible with long-lived WebSocket connections), and steady 24/7 traffic is the cost profile where Lambda is more expensive than provisioned compute.',B:'Beanstalk takes the existing Java app essentially unchanged, and provisions/manages the ALB, Auto Scaling group, and EC2 fleet automatically. Managed platform updates handle OS patching. This is the PaaS sweet spot: keep the code, delegate the infrastructure.',C:'A single EC2 instance is a single point of failure and the team manages everything — the opposite of the requirement.',D:'Self-managed Kubernetes maximizes infrastructure management burden — the opposite of the requirement.'},
+rule:'Beanstalk vs Lambda discrimination: existing app + minimal code changes + long-running/stateful + steady traffic = Beanstalk. Event-driven + short-lived + spiky + can refactor = Lambda. "Keep my code, manage my infra" is the Beanstalk trigger.'},
+
+{id:5,cat:'w',t:'mr',tag:'Weak Area · Multi-Response Completeness',
+stem:'A company wants to serve a static website from an S3 bucket through CloudFront over HTTPS using their custom domain (www.example.com). The S3 bucket must NOT be publicly accessible — only CloudFront may read from it. Which THREE steps are required? (Choose THREE)',
+opts:{A:'Request or import a public TLS certificate for www.example.com in AWS Certificate Manager in the us-east-1 region and associate it with the CloudFront distribution.',B:'Request the TLS certificate in the same region as the S3 bucket.',C:'Configure Origin Access Control (OAC) on the CloudFront distribution and update the S3 bucket policy to allow read access only from that CloudFront distribution.',D:'Enable S3 Transfer Acceleration on the bucket to speed up CloudFront origin fetches.',E:'Create a Route 53 alias record (or CNAME) pointing www.example.com to the CloudFront distribution domain name.'},
+correct:['A','C','E'],
+exp:{A:'CloudFront only accepts ACM certificates issued in us-east-1, regardless of where the origin lives. This is one of the most-tested facts on the exam.',B:'Trap answer. The bucket region is irrelevant — CloudFront certificates must be in us-east-1. Choosing this loses the question.',C:'OAC (successor to OAI) lets CloudFront sign requests to S3. The bucket policy grants s3:GetObject only to the CloudFront service principal scoped to your distribution — the bucket stays fully private while CloudFront serves content.',D:'Transfer Acceleration optimises client uploads to S3 — it has nothing to do with CloudFront origin fetches. Pure distractor.',E:'Without DNS pointing the custom domain at the distribution, users typing www.example.com never reach CloudFront. The solution is incomplete without this step — exactly the "missing final step" pattern that costs marks on multi-response questions.'},
+rule:'The S3 + CloudFront + custom domain trio: (1) ACM cert in us-east-1, (2) OAC + bucket policy for private origin, (3) Route 53 alias to the distribution. Multi-response questions require ALL steps — missing the DNS record is the classic dropped point.'},
+
+{id:6,cat:'w',t:'mc',tag:'Weak Area · KMS Key Policies',
+stem:'A security administrator created a new KMS Customer Managed Key and, to follow least privilege, wrote a key policy granting usage permissions only to a specific application role — removing the default statement that grants the account root full access. Later, the administrator\'s own role was deleted and recreated during a re-org. Now NO ONE in the account can administer the key — not even account administrators with full IAM permissions. Why, and what does AWS recommend to prevent this?',
+opts:{A:'IAM policies were evaluated before the key policy; recreating the admin role reset its policy evaluation order. AWS recommends using IAM policies alone for KMS access.',B:'KMS key policies are the primary access control for keys — IAM permissions alone grant nothing unless the key policy delegates to IAM. Removing the root account statement severed that delegation, making the key unmanageable. AWS recommends always retaining the default root-enablement statement in key policies.',C:'The key was created in the wrong region, so administrative API calls are being routed incorrectly.',D:'KMS keys require an SCP grant for administration; the re-org removed the relevant SCP.'},
+correct:['B'],
+exp:{A:'Backwards. For KMS, the key policy is evaluated as the primary control — IAM identity policies only work if the key policy contains the statement enabling IAM ("Enable IAM User Permissions" granting the account root principal access).',B:'KMS is unusual: unlike most services, IAM permissions are NOT sufficient by themselves. The default key policy statement granting kms:* to the account root principal is what delegates authority to IAM. Removing it means only principals explicitly named in the key policy can use or manage the key — and when those principals are deleted (a recreated role has a new unique ID), the key becomes unmanageable except via AWS Support.',C:'KMS keys are regional but this produces "key not found" errors, not a lockout.',D:'SCPs restrict permissions; they never grant them, for KMS or anything else.'},
+rule:'KMS inverts the normal model: key policy is king. IAM grants nothing unless the key policy delegates to IAM via the root account statement. Never remove the default "Enable IAM User Permissions" statement — deleted principals + no root statement = locked-out key.'},
+
+// ── APPENDIX SERVICES ──
+{id:7,cat:'a',t:'mc',tag:'Appendix · Messaging Migration',
+stem:'A company is migrating an on-premises order management system to AWS. The system depends on Apache ActiveMQ with JMS APIs, and dozens of integrated applications communicate through it using AMQP and MQTT protocols. The company wants to move to a managed AWS service with NO changes to the messaging code in any of the integrated applications. Which service should they choose?',
+opts:{A:'Amazon SQS with SNS for pub/sub topics.',B:'Amazon MQ.',C:'Amazon Kinesis Data Streams.',D:'Amazon EventBridge.'},
+correct:['B'],
+exp:{A:'SQS/SNS use proprietary AWS APIs — every integrated application would need its messaging code rewritten. Violates the no-code-change requirement.',B:'Amazon MQ is managed ActiveMQ (and RabbitMQ). It speaks the same protocols — JMS, AMQP, MQTT, OpenWire, STOMP — so existing applications reconnect to the new broker endpoint with only a connection-string change. Purpose-built for exactly this migration.',C:'Kinesis is a streaming platform with its own APIs — full rewrite required.',D:'EventBridge is an event bus with AWS-native APIs — full rewrite required.'},
+rule:'"Existing ActiveMQ/RabbitMQ, JMS/AMQP/MQTT, no code changes" = Amazon MQ. "Building new cloud-native messaging" = SQS/SNS. The exam tests this exact discrimination; same pattern as MSK vs Kinesis for Kafka.'},
+
+{id:8,cat:'a',t:'mc',tag:'Appendix · SaaS Integration',
+stem:'A marketing analytics team needs to copy Salesforce opportunity records into Amazon S3 every night for analysis in Athena. The team has no developers available and wants a no-code solution that can also run transformations like field mapping and filtering during transfer. Which service meets this requirement?',
+opts:{A:'AWS Glue with a custom Salesforce JDBC connector.',B:'Amazon AppFlow.',C:'AWS DataSync.',D:'Amazon EventBridge with a Salesforce partner event source.'},
+correct:['B'],
+exp:{A:'Glue can connect to Salesforce but requires writing and maintaining ETL job code — violates the no-code requirement.',B:'AppFlow is a fully managed, no-code integration service purpose-built for SaaS-to-AWS data flows. Native Salesforce connector, scheduled or event-triggered runs, built-in field mapping, filtering, and validation, delivering directly to S3. Exactly this use case.',C:'DataSync transfers files between storage systems (NFS/SMB/S3) — it has no SaaS application connectors.',D:'EventBridge receives real-time Salesforce events for event-driven architectures — it is not a batch data-copy service with transformation capabilities.'},
+rule:'"SaaS app (Salesforce/SAP/Slack) data to AWS, no code, with field mapping" = Amazon AppFlow. DataSync = file storage transfer. EventBridge = event routing.'},
+
+{id:9,cat:'a',t:'mc',tag:'Appendix · Document Processing',
+stem:'An insurance company receives thousands of scanned claim forms daily as PDFs. They need to automatically extract the form fields (claimant name, policy number, amounts) AND the data inside tables, preserving the key-value relationships — not just raw text. Which service is purpose-built for this?',
+opts:{A:'Amazon Rekognition with text detection.',B:'Amazon Comprehend.',C:'Amazon Textract with the AnalyzeDocument API.',D:'Amazon SageMaker with a custom OCR model.'},
+correct:['C'],
+exp:{A:'Rekognition detects text in images (signs, labels) but returns unstructured text — it does not understand forms, key-value pairs, or table structure.',B:'Comprehend analyzes already-extracted text for sentiment and entities — it cannot read documents or images at all.',C:'Textract\'s AnalyzeDocument API is specifically designed to extract structured data from documents: form key-value pairs (FORMS feature) and table cells with their relationships (TABLES feature). "Beyond simple OCR" is its positioning.',D:'Building custom OCR in SageMaker requires ML expertise, training data, and ongoing maintenance — unnecessary when Textract solves this natively.'},
+rule:'Document intelligence ladder: Rekognition = text in photos. Textract = forms, tables, key-value pairs from documents. Comprehend = meaning from text already extracted. Scanned forms with structure = Textract.'},
+
+{id:10,cat:'a',t:'mr',tag:'Appendix · ML Pipeline',
+stem:'A call centre records all customer support calls as audio files in S3. The company wants to automatically determine the overall sentiment (positive/negative) of each call and identify mentions of product names, with no machine learning expertise on the team. Which TWO services should be combined, in pipeline order? (Choose TWO)',
+opts:{A:'Amazon Transcribe to convert the call audio to text.',B:'Amazon Polly to process the audio recordings.',C:'Amazon Comprehend to analyze the transcribed text for sentiment and entities.',D:'Amazon Translate to normalize the call language.',E:'Amazon Kendra to index the call recordings.'},
+correct:['A','C'],
+exp:{A:'Transcribe is speech-to-text — it converts the audio recordings into text transcripts, the required first stage.',B:'Polly is text-to-SPEECH — the opposite direction. A classic reversed-direction distractor.',C:'Comprehend performs sentiment analysis and entity recognition (product names) on text. It consumes the Transcribe output. Audio → Transcribe → text → Comprehend → sentiment + entities.',D:'Translate converts between languages — nothing in the scenario requires translation.',E:'Kendra is enterprise search — it would let employees search call content but does not perform sentiment analysis.'},
+rule:'The audio analytics pipeline: Transcribe (audio→text) then Comprehend (text→sentiment/entities). Polly is the reverse (text→audio) and is the standard trap. Know the direction of every ML service.'},
+
+{id:11,cat:'a',t:'mc',tag:'Appendix · Hybrid Edge',
+stem:'A hospital network must run latency-sensitive medical imaging applications that process data which is legally required to remain inside the hospital premises. The IT team wants to use the same AWS APIs, tools, and services they use in their AWS Regions, but running on hardware physically located in the hospital data centre. Which service meets this requirement?',
+opts:{A:'AWS Wavelength.',B:'AWS Outposts.',C:'AWS Snowball Edge Compute Optimized.',D:'Amazon ECS Anywhere.'},
+correct:['B'],
+exp:{A:'Wavelength embeds AWS compute in telecom providers\' 5G networks — for mobile-edge applications, not customer premises.',B:'Outposts is a fully managed rack (or smaller form factor) of AWS infrastructure installed in YOUR data centre. It runs EC2, EBS, ECS, EKS, RDS and more locally with the same APIs and console, while data never leaves the premises. Purpose-built for data residency + low local latency.',C:'Snowball Edge provides limited compute for edge processing and data transfer jobs — it is not a persistent extension of AWS services with the full API surface.',D:'ECS Anywhere runs container workloads on your own hardware but covers only ECS — not the broad set of AWS services the team uses.'},
+rule:'"Same AWS APIs/services, on-premises hardware, data must stay on-site" = AWS Outposts. Wavelength = 5G mobile edge. Snowball Edge = transfer + temporary edge compute. Local Zones = AWS-managed metro locations.'},
+
+{id:12,cat:'a',t:'mc',tag:'Appendix · Ledger',
+stem:'A vehicle registration authority needs a database that maintains a complete, sequenced, tamper-evident history of every change to each vehicle record. Auditors must be able to cryptographically verify that no historical record has been altered. The authority is the single owner of the system — no other organizations write to it. Which database should the architect choose?',
+opts:{A:'Amazon Managed Blockchain.',B:'Amazon QLDB (Quantum Ledger Database).',C:'Amazon Aurora with audit logging enabled.',D:'Amazon DynamoDB with point-in-time recovery.'},
+correct:['B'],
+exp:{A:'Managed Blockchain is for DECENTRALIZED multi-party scenarios where no single entity is trusted. A single trusted authority makes blockchain consensus machinery unnecessary overhead. (Also out of scope for SAA-C03 — a pure distractor.)',B:'QLDB is an immutable, append-only ledger with a cryptographically verifiable change history (SHA-256 hash chaining in a journal). One trusted central authority owns it. Auditors can verify integrity via digests. Exactly this scenario.',C:'Aurora audit logs record activity but logs can be altered or deleted by administrators — not cryptographically tamper-evident.',D:'PITR enables restoring to a past state — it does not provide a verifiable, immutable history of all changes.'},
+rule:'"Immutable, cryptographically verifiable history, single trusted owner" = QLDB. "Multiple untrusting parties, decentralized" = Managed Blockchain (out of scope). Centralized trust = QLDB, always.'},
+
+{id:13,cat:'a',t:'mc',tag:'Appendix · Search & Logs',
+stem:'A company aggregates application logs from 200 microservices and needs: full-text search across all log content, near-real-time availability of new entries, and interactive dashboards for the operations team to visualize error trends. Which service is purpose-built for this workload?',
+opts:{A:'Amazon Athena querying logs stored in S3.',B:'Amazon OpenSearch Service with OpenSearch Dashboards.',C:'Amazon RDS PostgreSQL with full-text search indexes.',D:'Amazon Redshift with materialized views.'},
+correct:['B'],
+exp:{A:'Athena queries S3 data with SQL — powerful for ad-hoc analytics, but query latency is seconds-to-minutes and there is no native real-time ingestion or dashboarding. Not a live operational search tool.',B:'OpenSearch (managed Elasticsearch) is the canonical log analytics platform: inverted-index full-text search, near-real-time ingestion (often via Kinesis Firehose), and OpenSearch Dashboards (Kibana lineage) for visualization. The "ELK stack" use case.',C:'PostgreSQL full-text search works at small scale but ingesting and searching logs from 200 services would overwhelm a relational engine not designed for this.',D:'Redshift is a batch-oriented analytical warehouse — not designed for near-real-time log search and operational dashboards.'},
+rule:'"Full-text search + log analytics + near-real-time + dashboards" = Amazon OpenSearch Service. The ELK/Elasticsearch trigger. Athena = ad-hoc SQL on S3, not live operational search.'},
+
+{id:14,cat:'a',t:'mc',tag:'Appendix · Partner File Transfer',
+stem:'A logistics company exchanges shipment manifests with 80 external partners who upload files via SFTP using existing scripts and credentials they refuse to change. The company wants to retire its on-premises SFTP servers and have uploaded files land directly in Amazon S3 for processing, with no changes required on the partner side. Which service achieves this?',
+opts:{A:'AWS DataSync with an SFTP location.',B:'AWS Transfer Family with an SFTP-enabled server backed by S3.',C:'Amazon S3 pre-signed URLs distributed to partners.',D:'AWS Storage Gateway File Gateway.'},
+correct:['B'],
+exp:{A:'DataSync transfers between storage systems you control — it does not provide an SFTP endpoint for external parties to connect to.',B:'Transfer Family provides a fully managed SFTP (also FTPS/FTP/AS2) endpoint where files written by partners land directly in S3. Partners keep their existing SFTP clients, scripts, and workflows — only the endpoint hostname changes (or not even that, with DNS migration). Purpose-built for this exact scenario.',C:'Pre-signed URLs require partners to abandon SFTP and rewrite their upload scripts to use HTTPS — violates the no-change requirement.',D:'File Gateway exposes S3 as NFS/SMB to on-premises applications — it is not an externally-facing SFTP service.'},
+rule:'"External partners upload via SFTP/FTPS, keep their existing process, files land in S3" = AWS Transfer Family. DataSync = your own storage migration. File Gateway = on-prem NFS/SMB access to S3.'},
+
+{id:15,cat:'a',t:'mc',tag:'Appendix · Resource Sharing',
+stem:'A company uses a multi-account strategy with a dedicated networking account that owns a Transit Gateway and centrally managed VPC subnets. Application teams in 15 other accounts need to launch EC2 instances directly into these centrally managed subnets without each account creating its own VPCs. Which service enables this?',
+opts:{A:'VPC Peering from each application account to the networking account.',B:'AWS Resource Access Manager (RAM) to share the subnets and Transit Gateway with the application accounts.',C:'AWS Service Catalog portfolios shared to each account.',D:'IAM cross-account roles allowing application teams to launch instances in the networking account.'},
+correct:['B'],
+exp:{A:'VPC Peering connects separate VPCs — it does not allow another account to launch resources INTO your subnets.',B:'AWS RAM is the service for sharing AWS resources across accounts/OUs. Shared subnets let application accounts launch EC2, RDS, and Lambda directly into the centrally managed VPC while the networking account retains control of routing, NACLs, and IPAM. Transit Gateways are similarly shareable. This is the standard shared-VPC pattern.',C:'Service Catalog shares deployable product templates — not live network resources.',D:'Cross-account roles would put the application teams\' instances in the networking account itself — wrong ownership, billing, and operational model.'},
+rule:'"Share subnets / Transit Gateway / resources across accounts" = AWS RAM. The shared-VPC pattern: networking account owns and shares subnets via RAM; app accounts launch into them.'},
+
+{id:16,cat:'a',t:'mc',tag:'Appendix · Org-Wide Firewall',
+stem:'A security operations team must ensure that a mandatory set of AWS WAF rules is applied to every Application Load Balancer and CloudFront distribution across all 40 accounts in their AWS Organization — including resources created in the future. New non-compliant resources should be brought into compliance automatically. Which service provides this capability?',
+opts:{A:'AWS WAF deployed individually in each account with CloudFormation StackSets.',B:'AWS Firewall Manager with a WAF policy applied across the organization.',C:'AWS Network Firewall deployed in a central inspection VPC.',D:'AWS Config organization rules with manual remediation runbooks.'},
+correct:['B'],
+exp:{A:'StackSets can deploy WAF WebACLs to every account, but they do not automatically ASSOCIATE the WebACL with newly created ALBs/distributions, nor remediate drift when someone removes the association.',B:'Firewall Manager is purpose-built for centrally managing protection rules (WAF, Shield Advanced, security groups, Network Firewall) across an entire organization. Policies automatically apply to in-scope resources including future ones, and auto-remediate non-compliant resources. Requires Organizations + delegated admin.',C:'Network Firewall inspects VPC network traffic — it does not manage WAF rules on ALBs and CloudFront.',D:'Config detects non-compliance but the requirement is automatic enforcement — manual runbooks do not satisfy "automatically".'},
+rule:'"Centrally enforce WAF/Shield/SG rules across ALL accounts, auto-apply to future resources" = AWS Firewall Manager. WAF = the rules; Firewall Manager = org-wide deployment and enforcement of the rules.'},
+
+{id:17,cat:'a',t:'mc',tag:'Appendix · Compliance Evidence',
+stem:'An auditor preparing a SOC 2 assessment asks a company for two things: (1) AWS\'s own compliance certifications proving the underlying cloud infrastructure meets SOC 2, and (2) evidence that the company\'s OWN AWS usage (IAM configs, encryption settings, logging) complies with the framework, collected continuously rather than scrambled together at audit time. Which pair of services addresses these two requests respectively?',
+opts:{A:'AWS Artifact for AWS\'s compliance reports; AWS Audit Manager for continuous evidence collection of the company\'s own usage.',B:'AWS Audit Manager for both requests.',C:'AWS Artifact for both requests.',D:'AWS Config for AWS\'s reports; Amazon Detective for the company\'s evidence.'},
+correct:['A'],
+exp:{A:'Artifact is the self-service portal to download AWS\'s OWN audit reports (SOC, PCI, ISO) — covering the AWS side of the shared responsibility model. Audit Manager continuously collects evidence about YOUR resource configurations and usage, mapped to frameworks like SOC 2, automating audit readiness for your side. Two services, two halves of shared responsibility.',B:'Audit Manager collects evidence about your usage — it does not contain AWS\'s own third-party certification reports.',C:'Artifact only provides AWS\'s reports — it does not assess or collect evidence about your own configuration.',D:'Config tracks configuration compliance but is not the source of AWS\'s audit reports; Detective investigates security incidents, not audit evidence.'},
+rule:'Artifact = download AWS\'s own compliance reports (their side of shared responsibility). Audit Manager = continuously collect evidence of YOUR compliance (your side). The exam tests this exact split.'},
+
+// ── DISCRIMINATION QUESTIONS ──
+{id:18,cat:'disc',t:'mc',tag:'Discrimination · DR Cost Floor',
+stem:'A company must implement disaster recovery for a business application into a second region. Requirements: RTO of 4 hours, RPO of 15 minutes. The finance team has mandated the lowest possible ongoing DR cost that still meets these objectives. The application consists of EC2 web servers, an RDS MySQL database, and S3 assets. Which DR strategy should the architect choose?',
+opts:{A:'Active-Active multi-region with Route 53 weighted routing.',B:'Warm Standby: a scaled-down but running full stack in the DR region.',C:'Pilot Light: continuous database replication to the DR region with AMIs staged, but no EC2 instances running until failover.',D:'Backup and Restore: nightly snapshots copied to the DR region.'},
+correct:['C'],
+exp:{A:'Active-Active meets the objectives with enormous headroom but costs roughly double the primary region — directly violates the lowest-cost mandate. Over-engineering is a wrong answer on this exam.',B:'Warm Standby also meets the objectives, but runs EC2 + RDS continuously in the DR region. Since 4 hours of RTO budget is available, paying for always-on standby compute is unnecessary spend. Plausible but not cheapest-that-meets.',C:'Pilot Light replicates the data layer continuously (cross-region read replica or DMS — meets 15-min RPO) while compute stays OFF (near-zero ongoing cost). On failover, launching instances from staged AMIs and promoting the replica takes well under 4 hours. Cheapest option that satisfies both objectives.',D:'Nightly snapshots give an RPO of up to 24 hours — fails the 15-minute RPO outright.'},
+rule:'DR selection discipline: find the CHEAPEST strategy whose RTO/RPO still fit. Generous RTO (hours) + tight RPO (minutes) = Pilot Light (replicate data continuously, keep compute off). Two answers will "work" — the exam wants the cost floor.'},
+
+{id:19,cat:'disc',t:'mc',tag:'Discrimination · Kafka Decision',
+stem:'A company is moving its on-premises event streaming platform to AWS. The platform is built on Apache Kafka: 200+ producer/consumer applications use Kafka client libraries, and the team operates Kafka Connect connectors and Schema Registry. They want a managed AWS service with the least migration effort. A second team building a brand-new greenfield clickstream pipeline asks whether they should use the same service. What should the architect recommend?',
+opts:{A:'Both teams should use Amazon Kinesis Data Streams for AWS-native consistency.',B:'Both teams should use Amazon MSK to standardize on one platform.',C:'The migration team should use Amazon MSK (existing Kafka apps work unchanged); the greenfield team should default to Kinesis Data Streams (serverless, no cluster management) unless they specifically need Kafka ecosystem features.',D:'The migration team should rewrite all 200 applications for Kinesis; the greenfield team should use MSK.'},
+correct:['C'],
+exp:{A:'Forcing 200+ Kafka applications onto Kinesis means rewriting every producer and consumer plus abandoning Kafka Connect and Schema Registry — massive unnecessary effort.',B:'Defensible, but MSK requires cluster sizing, broker management, and capacity planning. For a greenfield pipeline with no Kafka dependency, this is unnecessary operational overhead vs serverless Kinesis.',C:'The correct two-part recommendation. MSK runs actual Kafka — existing clients, Connect, and Schema Registry work with a connection-string change. For greenfield with no Kafka heritage, Kinesis offers on-demand serverless scaling with zero cluster operations. Choose per workload, not one-size-fits-all.',D:'Exactly backwards on both counts.'},
+rule:'MSK vs Kinesis = the Amazon MQ vs SQS pattern at streaming scale: existing Kafka estate → MSK (protocol compatibility). Greenfield AWS-native → Kinesis (serverless, no brokers). "Least migration effort" is the MSK trigger.'},
+
+{id:20,cat:'disc',t:'mc',tag:'Discrimination · Two Right Answers',
+stem:'A company\'s API serves 95% read traffic. The same product records are requested repeatedly, and the RDS PostgreSQL primary is CPU-saturated. Both of these would reduce primary load: (a) adding read replicas, (b) adding an ElastiCache layer. The questionnaire adds: responses may be up to 5 minutes stale without business impact, the working set of hot records is ~2 GB, and the team wants the LOWEST COST solution. Which should the architect implement?',
+opts:{A:'Two RDS read replicas behind the reader endpoint.',B:'A single small ElastiCache for Redis node (e.g., cache.t4g.small) with a 5-minute TTL on cached records.',C:'Upgrade the primary RDS instance class to one with double the vCPUs.',D:'Aurora migration with 5 Aurora Replicas.'},
+correct:['B'],
+exp:{A:'Read replicas work, but each replica is a full RDS instance (~$100s/month) that still executes every query. For a 2 GB hot working set of repeated reads, this is paying database prices for cache work.',B:'The scenario hands you the cache qualifiers: tolerable staleness (5 min TTL), small hot working set (2 GB fits in the smallest cache nodes), repeated identical reads. A single small Redis node (~$25/month) absorbs the repeated reads at sub-millisecond latency. Cheapest solution that solves the problem.',C:'Vertical scaling roughly doubles cost and the redundant queries continue — the load returns as traffic grows.',D:'Aurora with 5 replicas is the most expensive option presented — massively over-provisioned for a 2 GB hot set.'},
+rule:'When read replicas AND caching both "work", the qualifiers decide: staleness tolerance + small hot working set + repeated identical reads = cache (cheaper). Need fresh data / large varied query surface / complex queries = read replicas. The exam buries these qualifiers mid-scenario.'},
+
+{id:21,cat:'disc',t:'mc',tag:'Discrimination · CloudFront vs GA Edge Case',
+stem:'A multiplayer game company runs game servers in us-east-1 and eu-west-1. The game uses a custom UDP protocol on port 7777. Players worldwide complain about lag and jitter. The company also needs two static IP addresses that never change, because console platform certification requires fixed IPs to be allowlisted. Which service solves both the performance and static IP requirements?',
+opts:{A:'Amazon CloudFront with both regions as origins.',B:'AWS Global Accelerator with endpoint groups in both regions.',C:'Route 53 latency-based routing with Elastic IPs on each game server.',D:'A Network Load Balancer in each region with Elastic IPs.'},
+correct:['B'],
+exp:{A:'CloudFront is HTTP/HTTPS only — it cannot proxy a custom UDP protocol on port 7777. Immediate disqualification regardless of other merits.',B:'Global Accelerator supports TCP and UDP on any port, provides exactly two static anycast IPv4 addresses (satisfying the allowlist requirement), routes players over the AWS global backbone reducing jitter, and load-balances across regional endpoint groups with automatic failover. Every requirement maps to a GA feature.',C:'Latency routing helps direct players to the nearer region, but Elastic IPs are regional per-server addresses (not two global IPs), and traffic still traverses the public internet — jitter persists.',D:'NLBs with EIPs give static IPs per region (four+ IPs, not two global ones) and do not provide backbone routing for the long-haul path.'},
+rule:'The Global Accelerator signature: non-HTTP protocol (UDP/TCP) + static anycast IPs + global performance + multi-region failover. ANY ONE of "UDP", "static IP requirement", or "non-HTTP" eliminates CloudFront instantly.'},
+
+{id:22,cat:'disc',t:'mr',tag:'Discrimination · Snow vs DataSync Maths',
+stem:'A research institute must move 600 TB of genomics data from an on-premises NAS to Amazon S3 within 3 weeks for a grant deadline. Their internet connection is 500 Mbps, already 60% utilized by daily operations that cannot be disrupted. After the initial bulk move, about 500 GB of new data per day must be synchronized continuously to S3. Which TWO services should the architect use? (Choose TWO)',
+opts:{A:'AWS DataSync over the existing internet connection for the 600 TB bulk transfer.',B:'Multiple AWS Snowball Edge Storage Optimized devices for the 600 TB bulk transfer.',C:'AWS Snowmobile for the bulk transfer.',D:'AWS DataSync over the internet for the ongoing 500 GB/day synchronization.',E:'AWS Transfer Family for the ongoing synchronization.'},
+correct:['B','D'],
+exp:{A:'The maths: 500 Mbps × 40% available ≈ 200 Mbps ≈ 25 MB/s ≈ ~2 TB/day. 600 TB ÷ 2 TB/day = 300 days. The 3-week deadline is impossible over the wire — this is the calculation the exam expects you to run.',B:'Snowball Edge Storage Optimized holds ~80 TB usable each. ~8 devices (orderable in parallel) cover 600 TB within the 3-week window including shipping and ingestion. Correct for the bulk phase.',C:'Snowmobile is for exabyte-scale (10 PB+) transfers — ordering a truck for 600 TB is the over-engineering distractor.',D:'500 GB/day needs ~46 Mbps sustained — comfortably within the ~200 Mbps available headroom. DataSync handles scheduled incremental sync with verification natively. Correct for the ongoing phase.',E:'Transfer Family provides SFTP endpoints for external parties — it is not a sync agent for your own NAS.'},
+rule:'Always run the transfer maths: GB ÷ (Mbps ÷ 8 × 0.x utilization) = days. Big data + small pipe + deadline = Snow Family for bulk; DataSync for ongoing incremental sync. Snowmobile only at 10 PB+.'},
+
+{id:23,cat:'disc',t:'mc',tag:'Discrimination · Right-Sizing Tool',
+stem:'A FinOps engineer is asked to produce three things: (1) ML-based recommendations for downsizing over-provisioned EC2 instances based on actual utilization, (2) a check for idle load balancers and unassociated Elastic IPs wasting money, and (3) an alert when a service quota (like VPC count) is close to its limit. The engineer wants to know which AWS tool provides EACH capability. Which mapping is correct?',
+opts:{A:'(1) Trusted Advisor, (2) Compute Optimizer, (3) Cost Explorer.',B:'(1) Compute Optimizer, (2) Trusted Advisor, (3) Trusted Advisor.',C:'(1) Cost Explorer, (2) AWS Budgets, (3) AWS Config.',D:'(1) Compute Optimizer, (2) Cost Explorer, (3) AWS Health Dashboard.'},
+correct:['B'],
+exp:{A:'Reversed: Trusted Advisor\'s right-sizing checks are simpler threshold-based checks; the ML-driven utilization analysis is Compute Optimizer\'s differentiator.',B:'Compute Optimizer = ML analysis of CloudWatch utilization metrics producing instance-type recommendations (1). Trusted Advisor = best-practice checks including cost checks for idle LBs/unassociated EIPs (2) AND service limit/quota checks (3). One tool covers both (2) and (3).',C:'Cost Explorer analyzes spend and offers basic RI recommendations — not ML right-sizing. Budgets alerts on spend, not idle resources. Config evaluates configuration compliance, not quota proximity.',D:'Cost Explorer does not check for idle resources; Health Dashboard reports AWS-side service events, not your quota consumption.'},
+rule:'The cost-tool trio: Compute Optimizer = ML right-sizing recommendations. Trusted Advisor = best-practice checks (idle resources, service limits, security basics). Cost Explorer = spend analysis and visualization. The exam swaps them constantly.'},
+
+{id:24,cat:'w',t:'mr',tag:'Weak Area · Multi-Response Completeness',
+stem:'A company needs their Lambda functions in a VPC private subnet to call a third-party payment API on the public internet. Currently the functions time out on every external call. Which THREE configuration elements are required for the Lambda functions to reach the internet? (Choose THREE)',
+opts:{A:'A NAT Gateway deployed in a public subnet of the VPC.',B:'A route in the private subnet route table directing 0.0.0.0/0 to the NAT Gateway.',C:'An Internet Gateway attached to the VPC (required for the NAT Gateway to function).',D:'An Elastic IP attached directly to each Lambda function\'s ENI.',E:'Assigning the Lambda functions to the public subnet instead.'},
+correct:['A','B','C'],
+exp:{A:'The NAT Gateway performs the address translation that lets private resources initiate outbound internet connections.',B:'Without the default route pointing at the NAT, traffic to the payment API has no path out. The most commonly forgotten element — and the reason for the timeouts.',C:'The NAT Gateway itself sits in a public subnet, which by definition requires an IGW attached to the VPC with a route to it. No IGW = the NAT has no internet path either. Three components, all mandatory.',D:'Lambda ENIs cannot have Elastic IPs attached. Not a real configuration.',E:'Trap: Lambda functions in a public subnet still cannot reach the internet, because Lambda ENIs never receive public IPs. Moving them to a public subnet changes nothing — a heavily tested misconception.'},
+rule:'Lambda-in-VPC internet access needs the full chain: IGW on the VPC + NAT Gateway in a public subnet + 0.0.0.0/0 route from the private subnet to the NAT. Lambda in a public subnet does NOT get internet (no public IPs on Lambda ENIs) — famous trap.'},
+];
+
+// ─── Engine ───────────────────────────────────────────────────────────────────
+let order=Q.map((_,i)=>i);
+const rev=new Set();
+let cf='all',tr=0,tc=0;
+
+function upd(){
+  const vis=order.filter(i=>cf==='all'||Q[i].cat===cf);
+  document.getElementById('sn').textContent=`${tc}/${tr}`;
+  document.getElementById('pf').style.width=(vis.length?tr/vis.length*100:0)+'%';
+}
+
+function build(){
+  const list=document.getElementById('list');
+  list.querySelectorAll('.qc').forEach(c=>c.remove());
+  order.forEach((qi,pos)=>{
+    const q=Q[qi],mr=q.t==='mr';
+    const card=document.createElement('div');
+    card.className='qc';card.id=`c${qi}`;card.dataset.cat=q.cat;
+    const head=document.createElement('div');
+    head.className='qh';
+    head.onclick=()=>card.classList.toggle('open');
+    const pillClass=q.cat==='w'?'p-w':(q.cat==='a'?'p-d':'p-d');
+    head.innerHTML=`<div class="qn">${pos+1}</div><div class="qhr"><div class="pills"><span class="pill ${pillClass}">${q.tag}</span>${mr?'<span class="pill p-mr">Choose multiple</span>':''}</div><div class="qs">${q.stem}</div></div><div class="ch">&#8964;</div>`;
+    const body=document.createElement('div');body.className='qb';
+    const opts=document.createElement('div');opts.className='opts';opts.id=`o${qi}`;
+    Object.entries(q.opts).forEach(([l,t])=>{
+      const o=document.createElement('div');o.className='opt';
+      o.innerHTML=`<div class="ol">${l}</div><div class="ot">${t}</div>`;
+      o.onclick=()=>{if(rev.has(qi))return;if(!mr)opts.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));o.classList.toggle('sel');};
+      opts.appendChild(o);
+    });
+    const sw=document.createElement('div');sw.className='sw';
+    const sb=document.createElement('button');sb.className='sb';sb.id=`sb${qi}`;
+    sb.textContent='Show Answer';
+    sb.onclick=()=>doRev(qi,q,card,opts,sb);
+    sw.appendChild(sb);
+    const ex=document.createElement('div');ex.className='ex';
+    let h='<div class="ex-h">Explanation</div><div class="ex-rows">';
+    Object.entries(q.exp).forEach(([l,t])=>{const ok=q.correct.includes(l);h+=`<div class="ex-row ${ok?'ok':'bad'}"><div class="el">${l}</div><div class="et"><strong>${ok?'✓':'✗'}</strong> ${t}</div></div>`;});
+    h+='</div>';
+    if(q.rule)h+=`<div class="kr">${q.rule}</div>`;
+    ex.innerHTML=h;
+    body.appendChild(opts);body.appendChild(sw);body.appendChild(ex);
+    card.appendChild(head);card.appendChild(body);list.appendChild(card);
+  });
+  applyF(cf);
+}
+
+function doRev(qi,q,card,opts,sb){
+  if(rev.has(qi))return;rev.add(qi);tr++;
+  const sel=[...opts.querySelectorAll('.sel')].map(o=>o.querySelector('.ol').textContent);
+  const cs=new Set(q.correct);
+  const ok=sel.length===cs.size&&sel.every(l=>cs.has(l));
+  if(ok){tc++;card.classList.add('ok');}else card.classList.add('bad');
+  opts.querySelectorAll('.opt').forEach(o=>{
+    const l=o.querySelector('.ol').textContent;
+    o.classList.remove('sel');
+    o.classList.add(q.correct.includes(l)?'rv-ok':'rv-bad');
+    o.onclick=null;o.style.cursor='default';
+  });
+  card.classList.add('open','rev');sb.classList.add('done');sb.textContent='Revealed';upd();
+}
+
+function filt(c,btn){cf=c;document.querySelectorAll('.cbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');applyF(c);}
+function applyF(c){
+  tr=0;tc=0;
+  document.querySelectorAll('.qc').forEach(card=>{
+    const qi=parseInt(card.id.slice(1));
+    const show=c==='all'||card.dataset.cat===c;
+    card.classList.toggle('hide',!show);
+    if(show&&rev.has(qi)){tr++;if(card.classList.contains('ok'))tc++;}
+  });
+  upd();
+}
+function rst(){if(!confirm('Clear all answers?'))return;rev.clear();tr=0;tc=0;build();}
+function revAll(){order.forEach(qi=>{const card=document.getElementById(`c${qi}`);if(!card.classList.contains('hide')&&!rev.has(qi)){card.classList.add('open');doRev(qi,Q[qi],card,document.getElementById(`o${qi}`),document.getElementById(`sb${qi}`));}});}
+function shuf(){for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}rev.clear();tr=0;tc=0;build();}
+window.addEventListener('scroll',()=>document.getElementById('stb').classList.toggle('v',scrollY>300));
+build();upd();
+</script>
+</body>
+</html>

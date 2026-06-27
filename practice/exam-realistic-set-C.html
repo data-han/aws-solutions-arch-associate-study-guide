@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam-Realistic Set C — 25 Questions</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 2rem; }
+    .scoreboard { background: #1e2433; border: 1px solid #2d3748; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 2rem; align-items: center; }
+    .score-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem; }
+    .score-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .score-value span { font-size: 0.9rem; color: #64748b; font-weight: 400; }
+    .reset-btn { margin-left: auto; background: #1e2433; border: 1px solid #374151; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    .reset-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+    .question-card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .question-card.answered { border-color: #374151; }
+    .question-header { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.1rem; }
+    .q-number { background: #2d3748; color: #94a3b8; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; margin-top: 2px; }
+    .q-text { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; }
+    .q-multi-hint { font-size: 0.75rem; color: #818cf8; margin-top: 0.35rem; font-weight: 600; }
+    .options { display: flex; flex-direction: column; gap: 0.5rem; }
+    .option { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.65rem 0.9rem; border: 1px solid #2d3748; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .option:hover:not(.disabled) { border-color: #6366f1; background: #252d3f; }
+    .option.selected { border-color: #6366f1; background: #252d3f; }
+    .option.disabled { cursor: default; }
+    .option.correct { border-color: #22c55e; background: #052e16; }
+    .option.wrong { border-color: #ef4444; background: #2d0a0a; }
+    .option.missed { border-color: #f59e0b; background: #1c1500; }
+    .option.neutral { border-color: #2d3748; }
+    .option-letter { font-size: 0.8rem; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px; width: 1rem; text-align: center; }
+    .option.correct .option-letter { color: #22c55e; }
+    .option.wrong .option-letter { color: #ef4444; }
+    .option.missed .option-letter { color: #f59e0b; }
+    .option.selected .option-letter { color: #818cf8; }
+    .option-body { flex: 1; }
+    .option-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.45; }
+    .option-explanation { display: none; font-size: 0.82rem; margin-top: 0.4rem; line-height: 1.5; }
+    .option.correct .option-explanation, .option.wrong .option-explanation, .option.missed .option-explanation, .option.neutral .option-explanation { display: block; }
+    .option.correct .option-explanation { color: #86efac; }
+    .option.wrong .option-explanation { color: #fca5a5; }
+    .option.missed .option-explanation { color: #fcd34d; }
+    .option.neutral .option-explanation { color: #64748b; }
+    .option-icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; display: none; }
+    .option.correct .option-icon::after { content: "✓"; color: #22c55e; display: block; }
+    .option.wrong .option-icon::after { content: "✗"; color: #ef4444; display: block; }
+    .option.missed .option-icon::after { content: "✓"; color: #f59e0b; display: block; }
+    .option.correct .option-icon, .option.wrong .option-icon, .option.missed .option-icon { display: block; }
+    .reveal-btn { margin-top: 1rem; background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .reveal-btn:hover { background: #4f46e5; }
+    .reveal-btn:disabled { opacity: 0.4; cursor: default; }
+    .result-badge { display: none; margin-left: 0.75rem; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .result-badge.correct-badge { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .result-badge.wrong-badge { background: #2d0a0a; color: #ef4444; border: 1px solid #991b1b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Exam-Realistic Set C — 25 Commonly-Missed Topics</h1>
+  <p class="subtitle">Placement groups, AI/ML services, IPv6, Transfer Family, Cognito pools, OpenSearch, MSK vs Kinesis.</p>
+  <div class="scoreboard">
+    <div><div class="score-label">Score</div><div class="score-value" id="score-display">0 <span>/ 0</span></div></div>
+    <div><div class="score-label">Answered</div><div class="score-value" id="answered-display">0 <span>/ 25</span></div></div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const questions = [
+  { q: "A genomics company runs a tightly-coupled HPC simulation across 20 EC2 instances that exchange large volumes of data with each other and are extremely sensitive to inter-node network latency. Which configuration gives the best inter-instance network performance?", correct: "B", options: { A: { text: "A spread placement group across 3 AZs", explanation: "Spread maximizes hardware isolation across racks/AZs — the opposite of what HPC needs. Network paths are longer." }, B: { text: "A cluster placement group with instances using Elastic Fabric Adapter (EFA)", explanation: "Correct. Cluster placement group packs instances on the same rack; EFA provides OS-bypass networking — lowest possible inter-node latency for HPC." }, C: { text: "A partition placement group with 7 partitions", explanation: "Partition groups are for large rack-fault-aware workloads (Cassandra, HDFS) — not designed for tight HPC inter-node communication." }, D: { text: "Instances spread across multiple AZs behind a Network Load Balancer", explanation: "Multi-AZ with NLB adds network hops and cross-AZ latency — the opposite of what HPC needs." } } },
+  { q: "A company runs a self-managed Apache Cassandra cluster of 18 nodes on EC2. They want to minimize the chance that a single hardware/rack failure takes down multiple nodes, while still running all nodes in one AZ for low latency. Which placement strategy fits best?", correct: "C", options: { A: { text: "Cluster placement group", explanation: "Cluster placement groups pack instances on the same rack — a rack failure could take down many nodes simultaneously." }, B: { text: "Spread placement group", explanation: "Spread placement groups cap at 7 instances per AZ — too few for 18 nodes." }, C: { text: "Partition placement group", explanation: "Correct. Partition groups put each partition on its own rack. With 18 nodes across multiple partitions, a rack failure only affects one partition." }, D: { text: "No placement group; rely on Auto Scaling", explanation: "No placement group gives no rack isolation guarantee — nodes may or may not share hardware by chance." } } },
+  { q: "A media app lets users upload photos. The company must automatically detect and block inappropriate (explicit) images before they're published, with no ML expertise on the team. What should the architect use?", correct: "B", options: { A: { text: "Train a custom image classifier on Amazon SageMaker", explanation: "Training a custom model requires ML expertise, labeled training data, and ongoing maintenance — excessive for a problem Rekognition already solves." }, B: { text: "Amazon Rekognition content moderation", explanation: "Correct. Rekognition has built-in content moderation for explicit/inappropriate images — no training, no ML expertise required." }, C: { text: "Amazon Textract", explanation: "Textract extracts text and structured data from documents — not image content or scene analysis." }, D: { text: "Amazon Comprehend", explanation: "Comprehend analyzes sentiment and entities in text — not images." } } },
+  { q: "A call center records customer support calls as audio files in S3. The company wants to transcribe each call and then analyze the transcript for customer sentiment, with the least operational overhead. Which combination should the architect recommend? (Choose TWO.)", correct: ["A","C"], multi: true, options: { A: { text: "Amazon Transcribe", explanation: "Correct. Transcribe converts the audio call to a text transcript — first step in the pipeline, fully managed." }, B: { text: "Amazon Polly", explanation: "Polly converts text to speech — wrong direction. Transcribe is speech→text; Polly is text→speech." }, C: { text: "Amazon Comprehend", explanation: "Correct. Comprehend analyzes the transcript text for sentiment — second step, fully managed, no ML expertise needed." }, D: { text: "Amazon Translate", explanation: "Translate converts text between languages — not needed here; the requirement is sentiment analysis, not translation." }, E: { text: "A custom NLP model on SageMaker", explanation: "Building a custom SageMaker model requires ML expertise and ongoing maintenance — unnecessary when Comprehend solves the problem." } } },
+  { q: "A logistics company has 5 years of historical shipment-volume data and wants to predict next quarter's demand per region to plan capacity. They have no data-science team. What is the lowest-overhead solution?", correct: "A", options: { A: { text: "Amazon Forecast", explanation: "Correct. Forecast is purpose-built for time-series demand prediction from historical data — no data science team or ML expertise needed." }, B: { text: "Amazon Kendra", explanation: "Kendra is a natural-language enterprise search service — not for time-series demand forecasting." }, C: { text: "Amazon Personalize", explanation: "Personalize generates user behavior-based recommendations (like 'you might also like') — not time-series volume forecasting." }, D: { text: "A regression model built and hosted on SageMaker", explanation: "Building a custom SageMaker model requires a data science team to train, evaluate, and maintain — exactly what the question rules out." } } },
+  { q: "An insurance company receives thousands of scanned claim forms (PDFs and images) daily and needs to extract the form fields and table data into a structured format for downstream processing. Which service is purpose-built for this?", correct: "B", options: { A: { text: "Amazon Rekognition", explanation: "Rekognition analyzes images for objects, scenes, and faces — it doesn't extract structured form fields or table data from documents." }, B: { text: "Amazon Textract", explanation: "Correct. Textract is purpose-built for extracting text, form key-value pairs, and table structure from scanned PDFs and images." }, C: { text: "Amazon Comprehend", explanation: "Comprehend analyzes text you already have for sentiment and entities — it doesn't extract structure from scanned documents." }, D: { text: "Amazon Transcribe", explanation: "Transcribe converts audio to text — not document processing." } } },
+  { q: "A workload runs EC2 instances that are assigned only IPv6 addresses. The instances must be able to download OS patches from the internet but must remain unreachable from inbound internet connections. What should the architect configure?", correct: "B", options: { A: { text: "A NAT gateway in a public subnet", explanation: "NAT gateway is IPv4-only — it doesn't work with IPv6 addresses at all." }, B: { text: "An egress-only internet gateway", explanation: "Correct. Egress-only internet gateway is the IPv6 equivalent of NAT gateway — allows outbound IPv6 traffic only, blocks inbound." }, C: { text: "An internet gateway with security group rules", explanation: "A regular internet gateway allows inbound connections too. Even with security group rules blocking inbound, the IGW still makes instances publicly addressable." }, D: { text: "A NAT instance with IPv6 forwarding", explanation: "NAT is an IPv4 concept — NAT instances don't apply to IPv6 traffic." } } },
+  { q: "A company exchanges files with external business partners who upload data using SFTP. The company wants the uploaded files to land directly in Amazon S3 and does not want to operate or patch any SFTP servers. Which service should the architect use?", correct: "B", options: { A: { text: "AWS DataSync", explanation: "DataSync is for bulk data synchronization between storage systems — not an SFTP endpoint for external partners." }, B: { text: "AWS Transfer Family", explanation: "Correct. Transfer Family provides a fully managed SFTP endpoint — files land directly in S3, no servers to operate or patch." }, C: { text: "AWS Storage Gateway (File Gateway)", explanation: "File Gateway provides on-premises NFS/SMB access to S3 for on-premises clients — not a managed SFTP endpoint for external partners." }, D: { text: "An EC2 instance running an SFTP daemon writing to S3", explanation: "Self-managed SFTP on EC2 is exactly the operational burden the question wants to avoid — patching, scaling, maintenance." } } },
+  { q: "A mobile application needs end users to sign up and sign in (including via Google and Apple), and after authentication the app must directly and securely access user-specific objects in Amazon S3. Which approach is correct?", correct: "B", options: { A: { text: "Use a Cognito user pool only and embed IAM access keys in the app", explanation: "Embedding IAM access keys in a mobile app is insecure — keys can be extracted. User pools alone don't vend AWS credentials." }, B: { text: "Use a Cognito user pool for sign-in and a Cognito identity pool to vend temporary AWS credentials via an IAM role", explanation: "Correct. User pool handles authentication (including Google/Apple); identity pool exchanges the token for temporary, scoped IAM credentials for S3 access." }, C: { text: "Create one IAM user per app user", explanation: "One IAM user per mobile app user doesn't scale to millions of users and creates long-lived credential management problems." }, D: { text: "Use IAM Identity Center for the end users", explanation: "IAM Identity Center is for workforce SSO to AWS accounts — not for millions of consumer mobile app end-users." } } },
+  { q: "A company wants to give API Gateway a managed way to authenticate end users with email/password and social login, returning a token the API can validate, without building an auth service. What should they use?", correct: "A", options: { A: { text: "A Cognito user pool as the API Gateway authorizer", explanation: "Correct. Cognito user pool authorizer on API Gateway validates the user pool JWT — handles email/password and social login without a custom auth service." }, B: { text: "A Cognito identity pool", explanation: "Identity pools vend temporary AWS credentials for direct service access — they're not API Gateway authorizers." }, C: { text: "An IAM role attached to API Gateway", explanation: "An IAM role on API Gateway controls what the API itself can do (invoke Lambda, etc.) — it doesn't authenticate end users." }, D: { text: "AWS Directory Service", explanation: "Directory Service is managed Active Directory for enterprise use — not an app end-user authentication service." } } },
+  { q: "A retailer wants to add a product recommendation engine ('customers who bought this also bought…') to its website based on user behavior, similar to Amazon.com, with minimal ML work. Which service?", correct: "A", options: { A: { text: "Amazon Personalize", explanation: "Correct. Personalize is the purpose-built service for behavior-based real-time recommendations — built on the same technology as Amazon.com's system, minimal ML required." }, B: { text: "Amazon Forecast", explanation: "Forecast predicts time-series values (demand, capacity) — not user behavior-based product recommendations." }, C: { text: "Amazon Comprehend", explanation: "Comprehend analyzes text for sentiment and entities — not recommendation engines." }, D: { text: "Amazon Kendra", explanation: "Kendra is enterprise natural-language search — not a product recommendation service." } } },
+  { q: "An enterprise wants employees to ask natural-language questions and search across millions of internal documents (wikis, PDFs, SharePoint) and get precise answers, not just keyword hits. Which service is purpose-built?", correct: "B", options: { A: { text: "Amazon OpenSearch Service", explanation: "OpenSearch is powerful for text search and log analytics but primarily keyword/relevance-based — not natural-language Q&A out of the box." }, B: { text: "Amazon Kendra", explanation: "Correct. Kendra uses ML for natural-language enterprise search — it understands questions and returns precise answers from your document corpus." }, C: { text: "Amazon CloudSearch with a custom ranking function", explanation: "CloudSearch is an older keyword search service with no ML-powered natural-language understanding." }, D: { text: "Amazon Comprehend", explanation: "Comprehend extracts entities and sentiment from text — it doesn't search a document corpus to answer questions." } } },
+  { q: "A company ingests application and infrastructure logs and needs full-text search and interactive dashboards/visualizations over the log data for operational troubleshooting. Which service is the best fit?", correct: "B", options: { A: { text: "Amazon Athena", explanation: "Athena is serverless SQL for ad-hoc queries on S3 — not a full-text log search engine with interactive dashboards." }, B: { text: "Amazon OpenSearch Service", explanation: "Correct. OpenSearch (the ELK pattern) is purpose-built for log analytics with full-text search and Dashboards for visualization." }, C: { text: "Amazon QuickSight", explanation: "QuickSight is a BI dashboard tool for structured data — not a full-text log search engine." }, D: { text: "Amazon Redshift", explanation: "Redshift is a data warehouse for complex analytical SQL — not for real-time log search and interactive troubleshooting." } } },
+  { q: "A business-intelligence team needs interactive dashboards for non-technical executives, sourcing data from Athena and Redshift, with per-user access and no servers to manage. Which service?", correct: "A", options: { A: { text: "Amazon QuickSight", explanation: "Correct. QuickSight is the serverless BI service with native connectors to Athena and Redshift, per-user/per-session pricing, and no infrastructure to manage." }, B: { text: "Amazon OpenSearch Dashboards", explanation: "OpenSearch Dashboards target log/search data for engineering/ops — not executive BI sourced from Athena/Redshift." }, C: { text: "Amazon Managed Grafana", explanation: "Managed Grafana is for operational metrics dashboards (CloudWatch, Prometheus) — engineering/DevOps, not executive BI." }, D: { text: "A self-hosted BI tool on EC2", explanation: "Self-hosted means servers to manage — explicitly ruled out." } } },
+  { q: "A data-platform team is building a data lake on S3 consumed by multiple analytics teams. They need centralized, fine-grained (table- and column-level) access control across Athena, Redshift Spectrum, and EMR. What should they use?", correct: "B", options: { A: { text: "S3 bucket policies per team", explanation: "Bucket policies control object-level access at the S3 layer — they can't enforce column-level permissions and are decentralized." }, B: { text: "AWS Lake Formation", explanation: "Correct. Lake Formation provides centralized, fine-grained (table and column level) permissions enforced across Athena, Redshift Spectrum, and EMR." }, C: { text: "IAM policies on each analytics service", explanation: "Per-service IAM policies are decentralized and can't enforce column-level access consistently across services." }, D: { text: "AWS Config rules", explanation: "Config evaluates configuration compliance — not data lake access control." } } },
+  { q: "A company already runs Apache Kafka on-premises and wants to move to a managed streaming service on AWS with minimal changes to its Kafka-based producers and consumers. Which service minimizes migration effort?", correct: "B", options: { A: { text: "Amazon Kinesis Data Streams", explanation: "Kinesis is AWS-native with its own API — existing Kafka producers and consumers need rewriting to use the Kinesis SDK." }, B: { text: "Amazon MSK (Managed Streaming for Apache Kafka)", explanation: "Correct. MSK is managed Apache Kafka — existing producers and consumers work with no code changes, just point to the MSK broker endpoints." }, C: { text: "Amazon SQS", explanation: "SQS is a queue with a completely different API — significant rewriting required." }, D: { text: "Amazon Kinesis Data Firehose", explanation: "Firehose delivers to data stores — it's not a Kafka-compatible streaming API." } } },
+  { q: "A real-time clickstream pipeline must ingest streaming data and automatically deliver it to Amazon S3 and Amazon Redshift with no consumer code to write and no servers to manage, buffering by time/size. Which service?", correct: "B", options: { A: { text: "Amazon Kinesis Data Streams with a custom KCL consumer", explanation: "Data Streams gives you the raw stream — you must write, deploy, and manage consumer application code." }, B: { text: "Amazon Kinesis Data Firehose", explanation: "Correct. Firehose delivers to S3 and Redshift automatically with configurable buffering — zero consumer code, no servers." }, C: { text: "Amazon MSK", explanation: "MSK is managed Kafka — you still need to build and run consumer applications to deliver data to S3/Redshift." }, D: { text: "Amazon SQS with a Lambda consumer", explanation: "SQS + Lambda is custom plumbing that requires writing and maintaining consumer code." } } },
+  { q: "A company wants to provide remote employees with persistent, managed virtual desktops accessible from anywhere, without shipping laptops or managing VDI infrastructure. Which service?", correct: "B", options: { A: { text: "Amazon AppStream 2.0", explanation: "AppStream 2.0 streams a single application to the browser — not a full persistent desktop environment." }, B: { text: "Amazon WorkSpaces", explanation: "Correct. WorkSpaces is managed Desktop-as-a-Service (DaaS) — persistent virtual desktops for remote employees, no VDI to manage." }, C: { text: "Amazon EC2 with RDP", explanation: "EC2 with RDP is unmanaged VDI — you manage the OS, patching, backups, and user provisioning." }, D: { text: "AWS Outposts", explanation: "Outposts brings AWS infrastructure on-premises — not a remote desktop delivery service." } } },
+  { q: "A SaaS provider needs to stream a single internal Windows application to external users' web browsers without giving them a full desktop or installing anything locally. Which service?", correct: "B", options: { A: { text: "Amazon WorkSpaces", explanation: "WorkSpaces provides a full persistent desktop — more than what's needed for streaming a single application." }, B: { text: "Amazon AppStream 2.0", explanation: "Correct. AppStream 2.0 streams a single application to any web browser — no local install, no full desktop." }, C: { text: "Amazon Lightsail", explanation: "Lightsail is a simple VPS service — not application streaming." }, D: { text: "CloudFront with a custom origin", explanation: "CloudFront caches and delivers content — not an interactive streaming application." } } },
+  { q: "A solutions architect must process a fleet of EC2 instances' memory utilization and alarm when it exceeds 90%. By default this metric is not available in CloudWatch. What is required?", correct: "B", options: { A: { text: "Enable detailed monitoring on the instances", explanation: "Detailed monitoring increases the frequency of existing EC2 metrics (CPU, network) from 5-minute to 1-minute intervals — it doesn't add new metrics like memory." }, B: { text: "Install the CloudWatch agent to publish memory as a custom metric", explanation: "Correct. Memory is an OS-level metric invisible to the hypervisor — the CloudWatch agent reads it from the OS and publishes it as a custom metric." }, C: { text: "Read memory usage from EC2 instance metadata", explanation: "Instance metadata contains instance IDs, IAM role info, and similar — not runtime memory utilization." }, D: { text: "Enable VPC Flow Logs", explanation: "VPC Flow Logs capture network traffic metadata — completely unrelated to compute resource utilization." } } },
+  { q: "A company needs an active-active relational database spanning two AWS Regions, where both Regions accept writes with sub-second replication and fast regional failover. Which option best meets this?", correct: "C", options: { A: { text: "RDS Multi-AZ", explanation: "RDS Multi-AZ is single-Region HA — the standby is in another AZ in the same Region and accepts no writes." }, B: { text: "RDS cross-Region read replicas", explanation: "Cross-Region read replicas are read-only — the secondary Region can't accept writes without manual promotion." }, C: { text: "Aurora Global Database with write forwarding", explanation: "Correct. Aurora Global Database with write forwarding allows secondary Regions to accept writes (forwarded to the primary), sub-second replication, fast failover." }, D: { text: "DynamoDB Global Tables", explanation: "Global Tables is active-active cross-Region, but it's NoSQL — the question explicitly requires relational." } } },
+  { q: "An application sends one event per new order that must reach three independent microservices, each of which must process events in strict order and must not lose events if it is briefly offline. Which design fits best?", correct: "B", options: { A: { text: "An SNS standard topic with three Lambda subscribers", explanation: "SNS standard doesn't guarantee ordering and Lambda subscribers have no durable buffer — if a Lambda is throttled, events can be lost." }, B: { text: "An SNS FIFO topic fanning out to three SQS FIFO queues, one per microservice", explanation: "Correct. FIFO topic preserves order; one FIFO queue per microservice provides durable, ordered, independent fan-out — no events lost if a service is briefly offline." }, C: { text: "A single SQS standard queue shared by all three services", explanation: "Shared queue means services compete for messages — each event is consumed once, not delivered to all three." }, D: { text: "Amazon Kinesis Data Firehose to each service", explanation: "Firehose delivers to data stores (S3, Redshift) — not an ordered per-service work queue." } } },
+  { q: "A company wants to automatically convert blog articles into natural-sounding audio (a 'listen to this article' feature) in multiple languages. Which combination is most appropriate? (Choose TWO.)", correct: ["A","C"], multi: true, options: { A: { text: "Amazon Translate", explanation: "Correct. Translate converts the article text to each target language — first step for multi-language support." }, B: { text: "Amazon Transcribe", explanation: "Transcribe converts speech to text — wrong direction. We need text→audio, not audio→text." }, C: { text: "Amazon Polly", explanation: "Correct. Polly converts text to natural-sounding speech audio — the final step that produces the audio file." }, D: { text: "Amazon Comprehend", explanation: "Comprehend analyzes text for entities and sentiment — doesn't produce audio." }, E: { text: "Amazon Lex", explanation: "Lex builds conversational chatbot interfaces — completely unrelated to article-to-audio conversion." } } },
+  { q: "A financial firm runs a latency-sensitive, tightly-coupled trading workload on a cluster placement group. They are worried that if the underlying rack fails, the entire group goes down. Which statement reflects the correct trade-off and a valid mitigation?", correct: "B", options: { A: { text: "Cluster groups span AZs automatically, so rack failure is not a concern", explanation: "Wrong — cluster placement groups are single-AZ by design. They don't span AZs; a rack failure IS a real concern." }, B: { text: "Cluster groups maximize throughput/low latency but share a failure domain; for resilience, run a second cluster group in another AZ and replicate", explanation: "Correct. Cluster groups do share a failure domain (same rack/AZ). The standard mitigation is a second cluster group in another AZ with application-level replication." }, C: { text: "Switch to a spread group with no performance impact", explanation: "Spread groups put instances on separate hardware — this changes the performance profile and eliminates the low-latency benefit the trading workload requires." }, D: { text: "Add more instances to the same cluster group to create redundancy", explanation: "More instances in the same cluster group are still in the same failure domain — doesn't improve resilience against a rack failure." } } },
+  { q: "A company stores PII in free-text customer feedback in S3 and must automatically detect and redact the PII before sharing the data with analysts. Which service detects the PII entities?", correct: "B", options: { A: { text: "Amazon Macie", explanation: "Macie discovers sensitive data at the S3 object level for classification — not for inline PII entity detection and redaction in a data processing pipeline." }, B: { text: "Amazon Comprehend", explanation: "Correct. Comprehend detects and can redact PII entities (names, emails, SSNs, etc.) in free text — designed for inline text processing pipelines." }, C: { text: "Amazon Textract", explanation: "Textract extracts text and structure from documents — it doesn't classify or detect PII entities within the extracted text." }, D: { text: "Amazon GuardDuty", explanation: "GuardDuty detects security threats by analyzing logs — not PII detection in text content." } } }
+];
+
+let selected = new Array(questions.length).fill(null);
+let revealed = new Array(questions.length).fill(false);
+
+function isCorrect(qIndex) {
+  const q = questions[qIndex];
+  const sel = selected[qIndex];
+  if (q.multi) { if (!sel || sel.size !== q.correct.length) return false; return q.correct.every(c => sel.has(c)); }
+  return sel === q.correct;
+}
+
+function updateScore() {
+  const answeredCount = revealed.filter(Boolean).length;
+  const correctCount = revealed.filter((r, i) => r && isCorrect(i)).length;
+  document.getElementById('score-display').innerHTML = `${correctCount} <span>/ ${answeredCount}</span>`;
+  document.getElementById('answered-display').innerHTML = `${answeredCount} <span>/ ${questions.length}</span>`;
+}
+
+function selectOption(qIndex, letter) {
+  if (revealed[qIndex]) return;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  const optEl = card.querySelector(`[data-opt="${letter}"]`);
+  if (q.multi) {
+    if (!selected[qIndex]) selected[qIndex] = new Set();
+    if (selected[qIndex].has(letter)) { selected[qIndex].delete(letter); optEl.classList.remove('selected'); }
+    else { selected[qIndex].add(letter); optEl.classList.add('selected'); }
+    card.querySelector('.reveal-btn').disabled = selected[qIndex].size === 0;
+  } else {
+    selected[qIndex] = letter;
+    card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    optEl.classList.add('selected');
+    card.querySelector('.reveal-btn').disabled = false;
+  }
+}
+
+function reveal(qIndex) {
+  if (revealed[qIndex]) return;
+  revealed[qIndex] = true;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  const sel = q.multi ? (selected[qIndex] || new Set()) : new Set(selected[qIndex] ? [selected[qIndex]] : []);
+  const correctSet = new Set(q.multi ? q.correct : [q.correct]);
+  card.classList.add('answered');
+  card.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    const letter = opt.dataset.opt;
+    const isC = correctSet.has(letter), isS = sel.has(letter);
+    opt.classList.remove('selected');
+    if (isC && isS) opt.classList.add('correct');
+    else if (isC && !isS) opt.classList.add('missed');
+    else if (!isC && isS) opt.classList.add('wrong');
+    else opt.classList.add('neutral');
+  });
+  const btn = card.querySelector('.reveal-btn');
+  btn.disabled = true; btn.textContent = 'Revealed';
+  const badge = card.querySelector('.result-badge');
+  badge.style.display = 'inline-block';
+  const correct = isCorrect(qIndex);
+  const correctLabel = q.multi ? q.correct.join(' & ') : q.correct;
+  if (correct) { badge.className = 'result-badge correct-badge'; badge.textContent = 'Correct'; }
+  else { badge.className = 'result-badge wrong-badge'; badge.textContent = sel.size === 0 ? `No answer — ${correctLabel} correct` : `Wrong — ${correctLabel} correct`; }
+  updateScore();
+}
+
+function resetAll() {
+  selected = new Array(questions.length).fill(null);
+  revealed = new Array(questions.length).fill(false);
+  render(); updateScore();
+}
+
+function render() {
+  document.getElementById('quiz').innerHTML = questions.map((q, i) => `
+    <div class="question-card" data-q="${i}">
+      <div class="question-header"><span class="q-number">Q${i+1}</span>
+        <div style="flex:1"><div class="q-text">${q.q}</div>${q.multi ? '<div class="q-multi-hint">▸ Choose TWO</div>' : ''}</div>
+      </div>
+      <div class="options">${Object.entries(q.options).map(([letter, opt]) => `
+        <div class="option" data-opt="${letter}" onclick="selectOption(${i},'${letter}')">
+          <div class="option-letter">${letter}</div>
+          <div class="option-body"><div class="option-text">${opt.text}</div><div class="option-explanation">${opt.explanation}</div></div>
+          <div class="option-icon"></div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;margin-top:1rem;">
+        <button class="reveal-btn" onclick="reveal(${i})" disabled>Reveal Answer</button>
+        <span class="result-badge"></span>
+      </div>
+    </div>`).join('');
+}
+
+render(); updateScore();
+</script>
+</body>
+</html>

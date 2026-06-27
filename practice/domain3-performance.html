@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain 3 — Design High-Performing Architectures</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 2rem; }
+    .scoreboard { background: #1e2433; border: 1px solid #2d3748; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 2rem; align-items: center; }
+    .score-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem; }
+    .score-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .score-value span { font-size: 0.9rem; color: #64748b; font-weight: 400; }
+    .reset-btn { margin-left: auto; background: #1e2433; border: 1px solid #374151; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: border-color 0.15s, color 0.15s; }
+    .reset-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+    .question-card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .question-card.answered { border-color: #374151; }
+    .question-header { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.1rem; }
+    .q-number { background: #2d3748; color: #94a3b8; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; margin-top: 2px; }
+    .q-text { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; }
+    .options { display: flex; flex-direction: column; gap: 0.5rem; }
+    .option { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.65rem 0.9rem; border: 1px solid #2d3748; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .option:hover:not(.disabled) { border-color: #6366f1; background: #252d3f; }
+    .option.selected { border-color: #6366f1; background: #252d3f; }
+    .option.disabled { cursor: default; }
+    .option.correct { border-color: #22c55e; background: #052e16; }
+    .option.wrong { border-color: #ef4444; background: #2d0a0a; }
+    .option.missed { border-color: #f59e0b; background: #1c1500; }
+    .option.neutral { border-color: #2d3748; }
+    .option-letter { font-size: 0.8rem; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px; width: 1rem; text-align: center; }
+    .option.correct .option-letter { color: #22c55e; }
+    .option.wrong .option-letter { color: #ef4444; }
+    .option.missed .option-letter { color: #f59e0b; }
+    .option.selected .option-letter { color: #818cf8; }
+    .option-body { flex: 1; }
+    .option-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.45; }
+    .option-explanation { display: none; font-size: 0.82rem; margin-top: 0.4rem; line-height: 1.5; }
+    .option.correct .option-explanation, .option.wrong .option-explanation, .option.missed .option-explanation, .option.neutral .option-explanation { display: block; }
+    .option.correct .option-explanation { color: #86efac; }
+    .option.wrong .option-explanation { color: #fca5a5; }
+    .option.missed .option-explanation { color: #fcd34d; }
+    .option.neutral .option-explanation { color: #64748b; }
+    .option-icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; display: none; }
+    .option.correct .option-icon::after { content: "✓"; color: #22c55e; display: block; }
+    .option.wrong .option-icon::after { content: "✗"; color: #ef4444; display: block; }
+    .option.missed .option-icon::after { content: "✓"; color: #f59e0b; display: block; }
+    .option.correct .option-icon, .option.wrong .option-icon, .option.missed .option-icon { display: block; }
+    .reveal-btn { margin-top: 1rem; background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.15s; }
+    .reveal-btn:hover { background: #4f46e5; }
+    .reveal-btn:disabled { opacity: 0.4; cursor: default; }
+    .result-badge { display: none; margin-left: 0.75rem; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .result-badge.correct-badge { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .result-badge.wrong-badge { background: #2d0a0a; color: #ef4444; border: 1px solid #991b1b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Domain 3 — Design High-Performing Architectures</h1>
+  <p class="subtitle">Select an answer, then click Reveal to see the explanation.</p>
+  <div class="scoreboard">
+    <div><div class="score-label">Score</div><div class="score-value" id="score-display">0 <span>/ 0</span></div></div>
+    <div><div class="score-label">Answered</div><div class="score-value" id="answered-display">0 <span>/ 10</span></div></div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const questions = [
+  {
+    q: "A read-heavy application puts excessive load on an RDS database with repeated identical queries. What improves read performance with the least application change?",
+    correct: "A",
+    options: {
+      A: { text: "Add an ElastiCache cache in front of the database", explanation: "Correct. ElastiCache caches the results of repeated identical queries — the DB barely sees them. Minimal app change: check cache, fall back to DB on miss." },
+      B: { text: "Vertically scale the database instance", explanation: "Scaling up helps under load but doesn't address the root problem of repeated identical queries. It's also expensive and hits a ceiling." },
+      C: { text: "Switch to DynamoDB", explanation: "A full database migration is a massive change — far from 'least application change'. Also changes the data model entirely." },
+      D: { text: "Enable Multi-AZ", explanation: "Multi-AZ is an HA feature — the standby is not readable and doesn't improve read performance." }
+    }
+  },
+  {
+    q: "A DynamoDB-backed app needs microsecond read latency for hot items. What should you add?",
+    correct: "B",
+    options: {
+      A: { text: "A larger table", explanation: "Table size and capacity units don't affect read latency — DynamoDB's base latency is single-digit milliseconds regardless." },
+      B: { text: "DynamoDB Accelerator (DAX)", explanation: "Correct. DAX is an in-memory cache purpose-built for DynamoDB — it delivers microsecond read latency for hot items with no app code changes." },
+      C: { text: "Global Tables", explanation: "Global Tables replicates data across Regions for global availability — it doesn't reduce read latency to microseconds within a Region." },
+      D: { text: "A GSI", explanation: "A Global Secondary Index allows querying by a different attribute — it doesn't change the underlying read latency of DynamoDB." }
+    }
+  },
+  {
+    q: "A global audience experiences high latency loading images from an S3-hosted website. What reduces latency most effectively?",
+    correct: "B",
+    options: {
+      A: { text: "Enable S3 Transfer Acceleration", explanation: "Transfer Acceleration speeds up uploads from users to S3 over long distances — it optimizes the upload path, not downloads." },
+      B: { text: "Serve content through CloudFront", explanation: "Correct. CloudFront caches the images at edge locations near users worldwide — dramatically reduces download latency." },
+      C: { text: "Move the bucket closer to users", explanation: "S3 buckets are regional — you can't move them dynamically to be closer to users. Even if you picked a closer region, you'd only help users in that area." },
+      D: { text: "Use a larger EC2 instance", explanation: "The content is hosted in S3, not EC2. A larger EC2 instance is irrelevant here." }
+    }
+  },
+  {
+    q: "A data analytics team wants to run ad-hoc SQL queries directly against data stored in S3 without provisioning servers. Which service?",
+    correct: "B",
+    options: {
+      A: { text: "Redshift", explanation: "Redshift requires loading data into the cluster and provisioning/managing cluster nodes — not serverless and not 'directly against S3'." },
+      B: { text: "Athena", explanation: "Correct. Athena is fully serverless and runs SQL directly against data in S3 with no infrastructure to manage — pay per query." },
+      C: { text: "EMR", explanation: "EMR runs big data frameworks (Spark, Hadoop) on managed clusters — requires provisioning and is far more complex than needed for ad-hoc SQL." },
+      D: { text: "RDS", explanation: "RDS is a managed relational database — data must be loaded into it first, and it requires a running instance." }
+    }
+  },
+  {
+    q: "A fleet of EC2 instances needs a shared file system accessible concurrently from many Linux instances across AZs. Which storage?",
+    correct: "B",
+    options: {
+      A: { text: "EBS io2 with multi-attach", explanation: "EBS Multi-Attach is limited to specific volume types, works only within the same AZ, and caps at a limited number of instances — not designed for broad concurrent Linux access." },
+      B: { text: "Amazon EFS", explanation: "Correct. EFS is a shared NFS file system that scales automatically and supports concurrent access from many Linux EC2 instances across multiple AZs." },
+      C: { text: "Instance store", explanation: "Instance store is ephemeral local storage tied to a single instance — it can't be shared across instances." },
+      D: { text: "S3 mounted as a drive", explanation: "S3 isn't a POSIX file system. Mounting it with tools like s3fs is unreliable under concurrent load and has much higher latency than a real file system." }
+    }
+  },
+  {
+    q: "An application requires a load balancer that handles millions of requests per second at ultra-low latency and provides a static IP. Which load balancer?",
+    correct: "B",
+    options: {
+      A: { text: "Application Load Balancer", explanation: "ALB operates at Layer 7 (HTTP/HTTPS) and has no native static IP — it uses DNS names. Higher latency than NLB." },
+      B: { text: "Network Load Balancer", explanation: "Correct. NLB operates at Layer 4, handles millions of requests per second at ultra-low latency, and supports Elastic (static) IPs." },
+      C: { text: "Gateway Load Balancer", explanation: "GWLB is designed for inserting third-party virtual network appliances (firewalls, IDS) — not for application load balancing." },
+      D: { text: "Classic Load Balancer", explanation: "Classic LB is legacy — no static IP guarantee, lower performance, limited to older EC2 platforms." }
+    }
+  },
+  {
+    q: "A database workload requires consistent, guaranteed high IOPS for an EC2-attached volume. Which EBS type?",
+    correct: "C",
+    options: {
+      A: { text: "gp2", explanation: "gp2 is general purpose SSD with burstable IOPS — it can't consistently guarantee high IOPS under sustained load." },
+      B: { text: "st1", explanation: "st1 (Throughput Optimized HDD) is optimized for sequential throughput workloads — low IOPS, not suitable for a transactional database." },
+      C: { text: "io2 Provisioned IOPS SSD", explanation: "Correct. io2 lets you explicitly provision the exact IOPS you need, guaranteed consistently — designed for I/O-intensive databases." },
+      D: { text: "sc1", explanation: "sc1 (Cold HDD) has the lowest IOPS of all EBS types — designed for infrequently accessed cold data." }
+    }
+  },
+  {
+    q: "An application's traffic is unpredictable and spiky; the team wants compute that scales automatically and incurs no cost when idle. Which compute model?",
+    correct: "B",
+    options: {
+      A: { text: "Reserved EC2 instances", explanation: "Reserved Instances charge you whether or not the instance is running — they pay off for steady, predictable usage, not spiky workloads." },
+      B: { text: "AWS Lambda", explanation: "Correct. Lambda scales automatically from zero to thousands of concurrent executions and charges only for actual invocation time — zero cost when idle." },
+      C: { text: "Dedicated Hosts", explanation: "Dedicated Hosts are physical servers reserved for your use — always running, always billed, and the most expensive option." },
+      D: { text: "A fixed EC2 fleet", explanation: "A fixed fleet must be sized for peak load — you pay for idle capacity during off-peak periods." }
+    }
+  },
+  {
+    q: "A real-time clickstream must be ingested in order, allow multiple independent consumers, and support replay for analytics. Which service?",
+    correct: "B",
+    options: {
+      A: { text: "SQS Standard", explanation: "SQS Standard has no ordering guarantee and delivers each message to one consumer — no support for multiple independent consumers reading the same data or replay." },
+      B: { text: "Kinesis Data Streams", explanation: "Correct. Kinesis Data Streams preserves order within a shard, allows multiple independent consumer groups to read the same data, and supports replay within the retention window." },
+      C: { text: "SNS", explanation: "SNS is push-based pub/sub — no ordering, no replay capability, and no persistent buffer for multiple consumers." },
+      D: { text: "SQS FIFO", explanation: "SQS FIFO enforces ordering but each message is consumed once by one consumer — no support for multiple independent consumers or replay." }
+    }
+  },
+  {
+    q: "A non-HTTP TCP application needs global users routed to the nearest healthy Region over the AWS backbone with static anycast IPs and fast failover. Which service?",
+    correct: "B",
+    options: {
+      A: { text: "CloudFront", explanation: "CloudFront is an HTTP/HTTPS CDN with caching — it doesn't support arbitrary TCP protocols and doesn't provide static anycast IPs." },
+      B: { text: "AWS Global Accelerator", explanation: "Correct. Global Accelerator provides static anycast IPs, routes traffic over the AWS backbone, supports any TCP/UDP protocol, and fails over between Regions in seconds." },
+      C: { text: "Route 53 weighted routing", explanation: "Route 53 is DNS-based — not a single static IP, and DNS failover is slower due to TTL propagation." },
+      D: { text: "Transit Gateway", explanation: "Transit Gateway is a VPC connectivity hub for routing between VPCs and on-premises networks — not a global traffic accelerator for end users." }
+    }
+  }
+];
+
+let selected = new Array(questions.length).fill(null);
+let revealed = new Array(questions.length).fill(false);
+
+function updateScore() {
+  const answeredCount = revealed.filter(Boolean).length;
+  const correctCount = revealed.filter((r, i) => r && selected[i] === questions[i].correct).length;
+  document.getElementById('score-display').innerHTML = `${correctCount} <span>/ ${answeredCount}</span>`;
+  document.getElementById('answered-display').innerHTML = `${answeredCount} <span>/ ${questions.length}</span>`;
+}
+
+function selectOption(qIndex, letter) {
+  if (revealed[qIndex]) return;
+  selected[qIndex] = letter;
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  card.querySelector(`[data-opt="${letter}"]`).classList.add('selected');
+  card.querySelector('.reveal-btn').disabled = false;
+}
+
+function reveal(qIndex) {
+  if (revealed[qIndex]) return;
+  revealed[qIndex] = true;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.classList.add('answered');
+  card.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    const letter = opt.dataset.opt;
+    opt.classList.remove('selected');
+    if (letter === q.correct && letter === selected[qIndex]) opt.classList.add('correct');
+    else if (letter === q.correct) opt.classList.add('missed');
+    else if (letter === selected[qIndex]) opt.classList.add('wrong');
+    else opt.classList.add('neutral');
+  });
+  const btn = card.querySelector('.reveal-btn');
+  btn.disabled = true; btn.textContent = 'Revealed';
+  const badge = card.querySelector('.result-badge');
+  badge.style.display = 'inline-block';
+  if (selected[qIndex] === q.correct) { badge.className = 'result-badge correct-badge'; badge.textContent = 'Correct'; }
+  else { badge.className = 'result-badge wrong-badge'; badge.textContent = selected[qIndex] ? `Wrong — ${q.correct} is correct` : `No answer — ${q.correct} is correct`; }
+  updateScore();
+}
+
+function resetAll() {
+  selected = new Array(questions.length).fill(null);
+  revealed = new Array(questions.length).fill(false);
+  render(); updateScore();
+}
+
+function render() {
+  document.getElementById('quiz').innerHTML = questions.map((q, i) => `
+    <div class="question-card" data-q="${i}">
+      <div class="question-header"><span class="q-number">Q${i+1}</span><span class="q-text">${q.q}</span></div>
+      <div class="options">${Object.entries(q.options).map(([letter, opt]) => `
+        <div class="option" data-opt="${letter}" onclick="selectOption(${i},'${letter}')">
+          <div class="option-letter">${letter}</div>
+          <div class="option-body"><div class="option-text">${opt.text}</div><div class="option-explanation">${opt.explanation}</div></div>
+          <div class="option-icon"></div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;margin-top:1rem;">
+        <button class="reveal-btn" onclick="reveal(${i})" disabled>Reveal Answer</button>
+        <span class="result-badge"></span>
+      </div>
+    </div>`).join('');
+}
+
+render(); updateScore();
+</script>
+</body>
+</html>

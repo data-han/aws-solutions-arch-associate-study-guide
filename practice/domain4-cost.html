@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain 4 — Design Cost-Optimized Architectures</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 2rem; }
+    .scoreboard { background: #1e2433; border: 1px solid #2d3748; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 2rem; align-items: center; }
+    .score-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem; }
+    .score-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .score-value span { font-size: 0.9rem; color: #64748b; font-weight: 400; }
+    .reset-btn { margin-left: auto; background: #1e2433; border: 1px solid #374151; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    .reset-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+    .question-card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .question-card.answered { border-color: #374151; }
+    .question-header { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.1rem; }
+    .q-number { background: #2d3748; color: #94a3b8; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; margin-top: 2px; }
+    .q-text { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; }
+    .options { display: flex; flex-direction: column; gap: 0.5rem; }
+    .option { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.65rem 0.9rem; border: 1px solid #2d3748; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .option:hover:not(.disabled) { border-color: #6366f1; background: #252d3f; }
+    .option.selected { border-color: #6366f1; background: #252d3f; }
+    .option.disabled { cursor: default; }
+    .option.correct { border-color: #22c55e; background: #052e16; }
+    .option.wrong { border-color: #ef4444; background: #2d0a0a; }
+    .option.missed { border-color: #f59e0b; background: #1c1500; }
+    .option.neutral { border-color: #2d3748; }
+    .option-letter { font-size: 0.8rem; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px; width: 1rem; text-align: center; }
+    .option.correct .option-letter { color: #22c55e; }
+    .option.wrong .option-letter { color: #ef4444; }
+    .option.missed .option-letter { color: #f59e0b; }
+    .option.selected .option-letter { color: #818cf8; }
+    .option-body { flex: 1; }
+    .option-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.45; }
+    .option-explanation { display: none; font-size: 0.82rem; margin-top: 0.4rem; line-height: 1.5; }
+    .option.correct .option-explanation, .option.wrong .option-explanation, .option.missed .option-explanation, .option.neutral .option-explanation { display: block; }
+    .option.correct .option-explanation { color: #86efac; }
+    .option.wrong .option-explanation { color: #fca5a5; }
+    .option.missed .option-explanation { color: #fcd34d; }
+    .option.neutral .option-explanation { color: #64748b; }
+    .option-icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; display: none; }
+    .option.correct .option-icon::after { content: "✓"; color: #22c55e; display: block; }
+    .option.wrong .option-icon::after { content: "✗"; color: #ef4444; display: block; }
+    .option.missed .option-icon::after { content: "✓"; color: #f59e0b; display: block; }
+    .option.correct .option-icon, .option.wrong .option-icon, .option.missed .option-icon { display: block; }
+    .reveal-btn { margin-top: 1rem; background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .reveal-btn:hover { background: #4f46e5; }
+    .reveal-btn:disabled { opacity: 0.4; cursor: default; }
+    .result-badge { display: none; margin-left: 0.75rem; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .result-badge.correct-badge { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .result-badge.wrong-badge { background: #2d0a0a; color: #ef4444; border: 1px solid #991b1b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Domain 4 — Design Cost-Optimized Architectures</h1>
+  <p class="subtitle">Select an answer, then click Reveal to see the explanation.</p>
+  <div class="scoreboard">
+    <div><div class="score-label">Score</div><div class="score-value" id="score-display">0 <span>/ 0</span></div></div>
+    <div><div class="score-label">Answered</div><div class="score-value" id="answered-display">0 <span>/ 10</span></div></div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const questions = [
+  {
+    q: "A batch image-processing job is fault-tolerant and can be interrupted and resumed. Which EC2 purchasing option is most cost-effective?",
+    correct: "C",
+    options: {
+      A: { text: "On-Demand", explanation: "On-Demand is the most expensive per-hour option — there's no discount for fault-tolerant interruptible workloads." },
+      B: { text: "Reserved Instances", explanation: "Reserved Instances suit steady 24/7 usage — a batch job that runs occasionally wastes most of the reservation." },
+      C: { text: "Spot Instances", explanation: "Correct. Spot Instances offer up to 90% discount and are ideal for fault-tolerant, restartable batch work — if interrupted, the job simply resumes from a checkpoint." },
+      D: { text: "Dedicated Hosts", explanation: "Dedicated Hosts are physical servers reserved for compliance or licensing — the most expensive option and completely unnecessary here." }
+    }
+  },
+  {
+    q: "A company runs a steady, predictable production workload 24/7 for the next 3 years and wants maximum savings with flexibility across EC2, Fargate, and Lambda. Which option?",
+    correct: "B",
+    options: {
+      A: { text: "Spot Instances", explanation: "Spot Instances can be reclaimed by AWS at any time — not suitable for steady production workloads that must stay running." },
+      B: { text: "Compute Savings Plans", explanation: "Correct. Compute Savings Plans give up to 66–72% savings for a usage commitment, and they're flexible across EC2 instance families, Fargate, and Lambda — perfect here." },
+      C: { text: "On-Demand", explanation: "On-Demand is most expensive — no discount for committed, long-running usage." },
+      D: { text: "More Auto Scaling", explanation: "Auto Scaling manages capacity, not unit pricing. It doesn't reduce the cost per compute hour." }
+    }
+  },
+  {
+    q: "Logs in S3 are accessed frequently for 30 days, rarely after, and must be retained 7 years for compliance with retrieval times of several hours acceptable. What is the most cost-effective approach?",
+    correct: "B",
+    options: {
+      A: { text: "Keep everything in S3 Standard", explanation: "Standard pays full storage price for 7 years including the years of rarely-accessed data — far more expensive than tiering." },
+      B: { text: "Lifecycle policy: Standard → Standard-IA → Glacier Deep Archive; expire at 7 years", explanation: "Correct. This matches the access curve: expensive-but-fast for the hot period, cheaper for the rarely-accessed period, cheapest for the archive years, then expiration at 7 years." },
+      C: { text: "Store everything in Glacier immediately", explanation: "Glacier from day 1 means high retrieval fees and delays during the first 30 days of frequent access." },
+      D: { text: "Use S3 One Zone-IA only", explanation: "One Zone-IA is cheap but stores data in a single AZ (durability risk) and never transitions to even cheaper archive tiers." }
+    }
+  },
+  {
+    q: "Access patterns for a dataset in S3 are unknown and change over time. Which storage class minimizes cost without retrieval fees or manual tuning?",
+    correct: "B",
+    options: {
+      A: { text: "Standard-IA", explanation: "Standard-IA charges retrieval fees — if the access pattern turns out to be frequent, it gets expensive. Requires knowing the access pattern in advance." },
+      B: { text: "S3 Intelligent-Tiering", explanation: "Correct. Intelligent-Tiering monitors access patterns and automatically moves objects between tiers. No retrieval fees, no manual lifecycle rules needed." },
+      C: { text: "Glacier Flexible Retrieval", explanation: "Glacier assumes cold data — if the pattern turns out to be more frequent, retrieval fees and multi-hour delays make it costly and slow." },
+      D: { text: "One Zone-IA", explanation: "One Zone-IA stores data in a single AZ (durability risk), charges retrieval fees, and still requires you to know the access pattern." }
+    }
+  },
+  {
+    q: "Instances in a private subnet download large amounts of data from S3 through a NAT Gateway, generating high data-processing charges. How do you cut costs?",
+    correct: "B",
+    options: {
+      A: { text: "Use a larger NAT Gateway", explanation: "NAT Gateway charges are based on data processed, not bandwidth — a larger gateway processes more data faster but costs more, not less." },
+      B: { text: "Use a Gateway VPC Endpoint for S3", explanation: "Correct. S3 Gateway Endpoints are free and route S3 traffic directly within the AWS network, bypassing the NAT Gateway entirely and eliminating its data-processing charges." },
+      C: { text: "Move instances to a public subnet", explanation: "Public subnets remove the NAT Gateway cost but expose instances directly to the internet — a security concern." },
+      D: { text: "Use an Interface Endpoint with PrivateLink", explanation: "S3 uses Gateway Endpoints (free), not Interface Endpoints (paid hourly + per GB). Using an Interface Endpoint for S3 would still incur charges." }
+    }
+  },
+  {
+    q: "A finance team wants automatic alerts when monthly spend is forecast to exceed a threshold. Which tool?",
+    correct: "B",
+    options: {
+      A: { text: "Cost Explorer", explanation: "Cost Explorer visualizes and analyzes historical and current costs — it doesn't send proactive threshold alerts." },
+      B: { text: "AWS Budgets", explanation: "Correct. AWS Budgets lets you set spend or usage thresholds and sends alerts (email/SNS) when actual or forecasted spend exceeds the threshold." },
+      C: { text: "Trusted Advisor", explanation: "Trusted Advisor gives best-practice recommendations including some cost items — but it doesn't let you set custom spend threshold alerts." },
+      D: { text: "Cost and Usage Report", explanation: "CUR provides detailed billing data for analysis — it's a data source, not an alerting tool." }
+    }
+  },
+  {
+    q: "A development environment of EC2 instances is only used during business hours. What reduces cost with minimal effort?",
+    correct: "B",
+    options: {
+      A: { text: "Buy Reserved Instances", explanation: "Reserved Instances charge you even when the instances are stopped — you'd pay for all the overnight and weekend hours you're not using." },
+      B: { text: "Stop/schedule the instances outside business hours", explanation: "Correct. Stopped instances don't incur compute charges. A simple schedule (e.g., AWS Instance Scheduler) cuts roughly 65% of compute cost with minimal effort." },
+      C: { text: "Use Spot Instances for dev", explanation: "Spot Instances can be reclaimed unexpectedly — disruptive for a dev team that needs predictable uptime during working hours." },
+      D: { text: "Resize to the smallest instance permanently", explanation: "Downsizing may break the dev workload and doesn't eliminate cost during idle hours — the savings are far smaller than simply stopping them." }
+    }
+  },
+  {
+    q: "A company with many AWS accounts wants a single consolidated bill and volume pricing discounts. What enables this?",
+    correct: "B",
+    options: {
+      A: { text: "AWS Budgets", explanation: "Budgets is a spend-alerting tool — it doesn't consolidate billing across accounts." },
+      B: { text: "Consolidated billing in AWS Organizations", explanation: "Correct. Consolidated billing through AWS Organizations produces a single invoice and aggregates usage across accounts for volume pricing tier discounts." },
+      C: { text: "Savings Plans", explanation: "Savings Plans reduce per-unit compute cost via commitment — they don't consolidate billing or create a single invoice." },
+      D: { text: "Separate invoices per account", explanation: "Opposite of the requirement — separate invoices mean no consolidated bill and no aggregated volume discounts." }
+    }
+  },
+  {
+    q: "A relational database workload has highly variable, intermittent traffic and is idle much of the time. Which option optimizes cost?",
+    correct: "B",
+    options: {
+      A: { text: "Largest RDS instance", explanation: "A large fixed instance pays full price even when idle — exactly the waste the question is trying to avoid." },
+      B: { text: "Aurora Serverless v2", explanation: "Correct. Aurora Serverless v2 scales capacity down to near-zero ACUs during idle periods and scales up on demand — you pay only for what you use." },
+      C: { text: "Multi-AZ RDS always on", explanation: "Multi-AZ runs two instances simultaneously (primary + standby) — even more expensive than a single instance, regardless of actual usage." },
+      D: { text: "DynamoDB provisioned capacity", explanation: "DynamoDB is NoSQL — doesn't fit a relational requirement. Provisioned capacity also charges for reserved capacity regardless of usage." }
+    }
+  },
+  {
+    q: "Which service provides right-sizing recommendations to reduce EC2 over-provisioning costs?",
+    correct: "A",
+    options: {
+      A: { text: "AWS Compute Optimizer", explanation: "Correct. Compute Optimizer uses ML to analyze CloudWatch metrics and recommend right-sized EC2 instance types, Lambda memory, and EBS volumes." },
+      B: { text: "CloudTrail", explanation: "CloudTrail logs API calls for auditing — it has no awareness of CPU/memory utilization or right-sizing." },
+      C: { text: "AWS Config", explanation: "Config evaluates resource configuration compliance — it doesn't analyze utilization or recommend right-sizing." },
+      D: { text: "GuardDuty", explanation: "GuardDuty is a threat detection service — completely unrelated to compute cost optimization." }
+    }
+  }
+];
+
+let selected = new Array(questions.length).fill(null);
+let revealed = new Array(questions.length).fill(false);
+
+function updateScore() {
+  const answeredCount = revealed.filter(Boolean).length;
+  const correctCount = revealed.filter((r, i) => r && selected[i] === questions[i].correct).length;
+  document.getElementById('score-display').innerHTML = `${correctCount} <span>/ ${answeredCount}</span>`;
+  document.getElementById('answered-display').innerHTML = `${answeredCount} <span>/ ${questions.length}</span>`;
+}
+
+function selectOption(qIndex, letter) {
+  if (revealed[qIndex]) return;
+  selected[qIndex] = letter;
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  card.querySelector(`[data-opt="${letter}"]`).classList.add('selected');
+  card.querySelector('.reveal-btn').disabled = false;
+}
+
+function reveal(qIndex) {
+  if (revealed[qIndex]) return;
+  revealed[qIndex] = true;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.classList.add('answered');
+  card.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    const letter = opt.dataset.opt;
+    opt.classList.remove('selected');
+    if (letter === q.correct && letter === selected[qIndex]) opt.classList.add('correct');
+    else if (letter === q.correct) opt.classList.add('missed');
+    else if (letter === selected[qIndex]) opt.classList.add('wrong');
+    else opt.classList.add('neutral');
+  });
+  const btn = card.querySelector('.reveal-btn');
+  btn.disabled = true; btn.textContent = 'Revealed';
+  const badge = card.querySelector('.result-badge');
+  badge.style.display = 'inline-block';
+  if (selected[qIndex] === q.correct) { badge.className = 'result-badge correct-badge'; badge.textContent = 'Correct'; }
+  else { badge.className = 'result-badge wrong-badge'; badge.textContent = selected[qIndex] ? `Wrong — ${q.correct} is correct` : `No answer — ${q.correct} is correct`; }
+  updateScore();
+}
+
+function resetAll() {
+  selected = new Array(questions.length).fill(null);
+  revealed = new Array(questions.length).fill(false);
+  render(); updateScore();
+}
+
+function render() {
+  document.getElementById('quiz').innerHTML = questions.map((q, i) => `
+    <div class="question-card" data-q="${i}">
+      <div class="question-header"><span class="q-number">Q${i+1}</span><span class="q-text">${q.q}</span></div>
+      <div class="options">${Object.entries(q.options).map(([letter, opt]) => `
+        <div class="option" data-opt="${letter}" onclick="selectOption(${i},'${letter}')">
+          <div class="option-letter">${letter}</div>
+          <div class="option-body"><div class="option-text">${opt.text}</div><div class="option-explanation">${opt.explanation}</div></div>
+          <div class="option-icon"></div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;margin-top:1rem;">
+        <button class="reveal-btn" onclick="reveal(${i})" disabled>Reveal Answer</button>
+        <span class="result-badge"></span>
+      </div>
+    </div>`).join('');
+}
+
+render(); updateScore();
+</script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 
 > Original scenario questions in exam style. Answers + explanations at the bottom. Cover the answers and reason through each.
 
-1B, 2B, 3C, 4B, 5C, 6B, 7B *, 8C, 9B, 10A
+
 ---
 **Q1.** An application on EC2 needs to read objects from an S3 bucket. A developer stored IAM access keys in the application's config file. What is the most secure way to grant access?
 - A. Rotate the access keys every 30 days

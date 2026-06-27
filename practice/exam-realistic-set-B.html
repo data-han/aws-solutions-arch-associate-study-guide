@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exam-Realistic Set B — 25 Questions</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 2rem; }
+    .scoreboard { background: #1e2433; border: 1px solid #2d3748; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 2rem; align-items: center; }
+    .score-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem; }
+    .score-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .score-value span { font-size: 0.9rem; color: #64748b; font-weight: 400; }
+    .reset-btn { margin-left: auto; background: #1e2433; border: 1px solid #374151; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
+    .reset-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+    .question-card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+    .question-card.answered { border-color: #374151; }
+    .question-header { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.1rem; }
+    .q-number { background: #2d3748; color: #94a3b8; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; margin-top: 2px; }
+    .q-text { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; }
+    .q-multi-hint { font-size: 0.75rem; color: #818cf8; margin-top: 0.35rem; font-weight: 600; }
+    .options { display: flex; flex-direction: column; gap: 0.5rem; }
+    .option { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.65rem 0.9rem; border: 1px solid #2d3748; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .option:hover:not(.disabled) { border-color: #6366f1; background: #252d3f; }
+    .option.selected { border-color: #6366f1; background: #252d3f; }
+    .option.disabled { cursor: default; }
+    .option.correct { border-color: #22c55e; background: #052e16; }
+    .option.wrong { border-color: #ef4444; background: #2d0a0a; }
+    .option.missed { border-color: #f59e0b; background: #1c1500; }
+    .option.neutral { border-color: #2d3748; }
+    .option-letter { font-size: 0.8rem; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px; width: 1rem; text-align: center; }
+    .option.correct .option-letter { color: #22c55e; }
+    .option.wrong .option-letter { color: #ef4444; }
+    .option.missed .option-letter { color: #f59e0b; }
+    .option.selected .option-letter { color: #818cf8; }
+    .option-body { flex: 1; }
+    .option-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.45; }
+    .option-explanation { display: none; font-size: 0.82rem; margin-top: 0.4rem; line-height: 1.5; }
+    .option.correct .option-explanation, .option.wrong .option-explanation, .option.missed .option-explanation, .option.neutral .option-explanation { display: block; }
+    .option.correct .option-explanation { color: #86efac; }
+    .option.wrong .option-explanation { color: #fca5a5; }
+    .option.missed .option-explanation { color: #fcd34d; }
+    .option.neutral .option-explanation { color: #64748b; }
+    .option-icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; display: none; }
+    .option.correct .option-icon::after { content: "✓"; color: #22c55e; display: block; }
+    .option.wrong .option-icon::after { content: "✗"; color: #ef4444; display: block; }
+    .option.missed .option-icon::after { content: "✓"; color: #f59e0b; display: block; }
+    .option.correct .option-icon, .option.wrong .option-icon, .option.missed .option-icon { display: block; }
+    .reveal-btn { margin-top: 1rem; background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .reveal-btn:hover { background: #4f46e5; }
+    .reveal-btn:disabled { opacity: 0.4; cursor: default; }
+    .result-badge { display: none; margin-left: 0.75rem; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .result-badge.correct-badge { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .result-badge.wrong-badge { background: #2d0a0a; color: #ef4444; border: 1px solid #991b1b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Exam-Realistic Set B — 25 Hard Questions</h1>
+  <p class="subtitle">Harder "all options work, pick the best" pattern. Watch the qualifier.</p>
+  <div class="scoreboard">
+    <div><div class="score-label">Score</div><div class="score-value" id="score-display">0 <span>/ 0</span></div></div>
+    <div><div class="score-label">Answered</div><div class="score-value" id="answered-display">0 <span>/ 25</span></div></div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const questions = [
+  { q: "A company runs a web app on EC2 in an Auto Scaling group behind an ALB across two Availability Zones. The database is a single RDS instance in one AZ. During an AZ outage, the app stayed up but the database became unreachable. What is the most cost-effective change to eliminate this single point of failure?", correct: "A", options: { A: { text: "Convert the RDS instance to a Multi-AZ deployment", explanation: "Correct. Multi-AZ adds a synchronous standby in another AZ with automatic failover — directly eliminates the DB single point of failure at modest additional cost." }, B: { text: "Create a read replica in the second AZ", explanation: "Read replicas use async replication — potential data loss — and don't automatically handle write failover." }, C: { text: "Migrate to Amazon DynamoDB global tables", explanation: "A full NoSQL migration is a major re-platform — excessive for a single-point-of-failure fix." }, D: { text: "Take more frequent automated snapshots", explanation: "Snapshots reduce RPO for manual restores but provide zero automatic failover during an AZ outage." } } },
+  { q: "A SaaS company must isolate workloads for hundreds of customers and apply different security guardrails per environment, while keeping a single consolidated bill. Which approach is best?", correct: "B", options: { A: { text: "One AWS account with separate VPCs per customer", explanation: "VPC isolation is weaker — all customers share the same IAM space, billing, and account-level blast radius." }, B: { text: "AWS Organizations with separate accounts per workload/environment and SCPs", explanation: "Correct. Separate accounts provide strong isolation; SCPs enforce per-environment guardrails; Organizations consolidates billing." }, C: { text: "One account with IAM groups per customer", explanation: "IAM groups within one account can't provide true customer isolation — admins can see across all customers." }, D: { text: "Separate AWS Organizations per customer", explanation: "Multiple Organizations breaks consolidated billing — each Organization produces its own invoice." } } },
+  { q: "An application uploads images to S3, and each upload must trigger a Lambda function to generate thumbnails. The solution must be fully serverless and event-driven with no polling. What should the architect configure?", correct: "A", options: { A: { text: "An S3 event notification that invokes the Lambda function", explanation: "Correct. S3 event notifications are native, serverless, and event-driven — no polling, zero operational overhead." }, B: { text: "A CloudWatch alarm that triggers Lambda", explanation: "CloudWatch alarms are metric-based (e.g., error rates) — they don't fire per-object upload events." }, C: { text: "A scheduled EventBridge rule that scans the bucket every minute", explanation: "Scheduled scanning is polling — explicitly ruled out by the requirement." }, D: { text: "An SQS queue that the Lambda function polls continuously", explanation: "SQS polling is a polling architecture — explicitly ruled out." } } },
+  { q: "A company's Lambda functions connect directly to an RDS database and exhaust the database's connections during traffic spikes. What should the architect add to manage connections efficiently with minimal code changes?", correct: "B", options: { A: { text: "Increase the RDS instance size", explanation: "A bigger instance raises the connection limit but doesn't prevent Lambda from opening and closing thousands of connections — the connection churn problem remains." }, B: { text: "Add Amazon RDS Proxy between Lambda and the database", explanation: "Correct. RDS Proxy pools and multiplexes connections — Lambda bursts share a small pool of DB connections with minimal code change." }, C: { text: "Move the database to DynamoDB", explanation: "A full NoSQL migration is an extensive change — far from 'minimal code changes'." }, D: { text: "Add a read replica", explanation: "Read replicas reduce read load but don't solve connection exhaustion on the write/primary endpoint." } } },
+  { q: "A financial firm must retain audit logs of every AWS API call across all accounts, store them immutably, and detect if anyone tries to disable logging. Which combination meets this? (Choose TWO.)", correct: ["A","C"], multi: true, options: { A: { text: "Enable an organization trail in AWS CloudTrail delivering to a central S3 bucket", explanation: "Correct. An org-level trail captures all API calls across all accounts in one trail delivered to a central bucket." }, B: { text: "Enable VPC Flow Logs in every VPC", explanation: "VPC Flow Logs capture network traffic metadata — not AWS API call history. Wrong data source for an API audit requirement." }, C: { text: "Apply S3 Object Lock and an SCP preventing CloudTrail from being disabled", explanation: "Correct. Object Lock makes the logs immutable; the SCP prevents anyone from disabling CloudTrail across all accounts." }, D: { text: "Use Amazon Macie to scan the logs", explanation: "Macie discovers PII in S3 — not relevant to API call audit integrity or log immutability." }, E: { text: "Enable AWS Config only", explanation: "Config tracks configuration changes to resources — not every API call, and doesn't provide immutable log storage." } } },
+  { q: "An application needs to serve read traffic from the geographically nearest of several Regions to minimize latency, automatically routing users to the closest healthy endpoint. Which Route 53 routing policy should the architect use?", correct: "B", options: { A: { text: "Weighted", explanation: "Weighted routing splits traffic by percentage — not based on measured network latency or health." }, B: { text: "Latency-based", explanation: "Correct. Latency-based routing measures actual network latency from the user to each Region and routes to the lowest-latency healthy endpoint." }, C: { text: "Geolocation", explanation: "Geolocation routes based on the user's geographic location — not measured latency. Users in Europe would always go to the European endpoint regardless of actual latency." }, D: { text: "Failover", explanation: "Failover is active-passive DR — it routes to the secondary only when the primary is unhealthy, not for general latency optimization." } } },
+  { q: "A company wants to run a relational database that automatically scales capacity up and down to match an intermittent, unpredictable workload and avoid paying for idle capacity. Which option is best?", correct: "B", options: { A: { text: "Amazon RDS for MySQL on a large instance", explanation: "Fixed RDS instance pays full price whether running at 1% or 100% utilization — wastes money during idle periods." }, B: { text: "Amazon Aurora Serverless v2", explanation: "Correct. Aurora Serverless v2 scales ACUs (Aurora Capacity Units) in fine-grained increments to match actual load — near-zero cost when idle." }, C: { text: "Amazon Redshift", explanation: "Redshift is an OLAP data warehouse — not suited for intermittent transactional relational workloads." }, D: { text: "Amazon RDS with Multi-AZ", explanation: "Multi-AZ adds HA but fixes instance size — you still pay for both the primary and standby regardless of usage." } } },
+  { q: "A solutions architect must allow an application in Account A to read objects from an S3 bucket owned by Account B, following least-privilege best practices. What is the recommended approach?", correct: "B", options: { A: { text: "Make the bucket public", explanation: "Public bucket violates least privilege entirely — anyone on the internet can read the objects." }, B: { text: "Create an IAM role in Account B that Account A can assume, or a bucket policy granting Account A's role access to the specific prefix", explanation: "Correct. Cross-account IAM role or a scoped bucket policy = least privilege, auditable, no credential sharing." }, C: { text: "Share Account B's IAM user access keys with Account A", explanation: "Sharing access keys is a major anti-pattern — unauditable, can't be rotated on a per-account basis, and hard to revoke." }, D: { text: "Use a NAT gateway to bridge the accounts", explanation: "NAT gateway is for outbound internet access — completely unrelated to cross-account S3 permissions." } } },
+  { q: "An online game needs a leaderboard that supports real-time ranking with sub-millisecond reads and sorted-set operations. Which service is best suited?", correct: "B", options: { A: { text: "Amazon DynamoDB", explanation: "DynamoDB delivers single-digit millisecond reads (microseconds with DAX) but lacks native sorted-set operations — ranking requires custom implementation." }, B: { text: "Amazon ElastiCache for Redis", explanation: "Correct. Redis has native ZSET (sorted set) commands — built exactly for leaderboards with sub-millisecond reads and real-time ranking." }, C: { text: "Amazon RDS", explanation: "RDS requires SQL ORDER BY queries for ranking — higher latency and won't match Redis's sub-millisecond sorted-set performance." }, D: { text: "Amazon S3", explanation: "S3 is object storage — completely unsuitable for real-time read/write ranking operations." } } },
+  { q: "A company runs an application across two Regions for disaster recovery. It needs a single static IP entry point that routes users to the healthy Region and fails over within seconds for a non-HTTP TCP protocol. Which service should the architect choose?", correct: "B", options: { A: { text: "Amazon CloudFront", explanation: "CloudFront is an HTTP/HTTPS CDN with content caching — it doesn't handle arbitrary TCP protocols." }, B: { text: "AWS Global Accelerator", explanation: "Correct. Global Accelerator provides two static anycast IPs, routes over the AWS backbone, supports any TCP/UDP protocol, and detects regional failures in seconds." }, C: { text: "Route 53 weighted routing", explanation: "Route 53 is DNS-based — not a single static IP, and DNS failover is slower due to TTL propagation delays." }, D: { text: "An internet-facing NLB in each Region only", explanation: "Two NLBs give no unified entry point and no automatic cross-Region failover logic." } } },
+  { q: "A company must process a stream of IoT sensor data and load it into Amazon S3 and Amazon Redshift in near real time with no servers to manage. Which service should the architect use?", correct: "A", options: { A: { text: "Amazon Kinesis Data Firehose", explanation: "Correct. Firehose is fully managed — it ingests streaming data and delivers to S3 and Redshift in near real time with built-in buffering, no consumer code, no servers." }, B: { text: "Amazon Kinesis Data Streams with a custom consumer", explanation: "Data Streams gives you the stream but you must write, deploy, and manage consumer application code." }, C: { text: "Amazon SQS", explanation: "SQS is a queue — not a streaming-to-data-store delivery service. Requires custom consumer code to write to S3/Redshift." }, D: { text: "AWS Batch", explanation: "Batch is for scheduled batch compute jobs — not real-time streaming data delivery." } } },
+  { q: "A static marketing website experiences global traffic. The company wants the lowest cost and least operational overhead to host and serve it with low latency. What should the architect recommend?", correct: "B", options: { A: { text: "EC2 instances behind an ALB in multiple Regions", explanation: "Running servers for a static site adds compute cost and operational overhead — overkill." }, B: { text: "An S3 bucket configured for static website hosting, fronted by Amazon CloudFront", explanation: "Correct. S3 static hosting + CloudFront = cheapest storage, zero servers, globally low-latency edge delivery." }, C: { text: "Elastic Beanstalk with a load balancer", explanation: "Elastic Beanstalk runs application servers — unnecessary for a purely static site." }, D: { text: "A fleet of Lightsail instances", explanation: "Lightsail is managed VPS — still running servers you don't need for static content." } } },
+  { q: "A company must encrypt EBS volumes and their snapshots for a compliance audit, with keys managed by AWS but auditable. The simplest way to ensure all new volumes are encrypted by default is to:", correct: "B", options: { A: { text: "Manually enable encryption when creating each volume", explanation: "Manual enablement is error-prone — developers will eventually create an unencrypted volume." }, B: { text: "Enable EBS encryption by default in the account/Region using a KMS key", explanation: "Correct. EBS default encryption ensures every new volume and snapshot is automatically encrypted with the chosen KMS key — auditable via CloudTrail." }, C: { text: "Use instance store volumes instead", explanation: "Instance store volumes are ephemeral local storage — not persistently EBS-backed and can't be snapshotted the same way." }, D: { text: "Encrypt data only at the application layer", explanation: "App-layer encryption doesn't satisfy volume/snapshot-level encryption requirements for compliance." } } },
+  { q: "An application's batch tier reads messages from an SQS queue. Occasionally a malformed message causes the consumer to fail repeatedly, blocking the queue. How should the architect prevent this without losing the problematic messages?", correct: "B", options: { A: { text: "Reduce the visibility timeout to zero", explanation: "Zero visibility timeout makes the message immediately reappear — this worsens the problem by causing a reprocessing storm." }, B: { text: "Configure a dead-letter queue with a maxReceiveCount", explanation: "Correct. After maxReceiveCount failed attempts, SQS moves the message to the DLQ for debugging — the main queue unblocks without losing the message." }, C: { text: "Switch to a FIFO queue", explanation: "FIFO enforces ordering — it doesn't automatically handle poison messages or move them aside." }, D: { text: "Delete messages that fail once", explanation: "Deleting on first failure loses the message entirely — violates 'without losing the problematic messages'." } } },
+  { q: "A company needs to grant temporary, federated access to its AWS resources for users authenticated by its corporate SAML 2.0 identity provider, without creating IAM users for each employee. What should the architect use?", correct: "B", options: { A: { text: "Amazon Cognito user pools", explanation: "Cognito user pools are for app end-users (consumers) — not for enterprise workforce SAML federation to AWS accounts." }, B: { text: "IAM Identity Center / IAM federation with the SAML IdP and IAM roles", explanation: "Correct. SAML federation via Identity Center or IAM provides temporary credentials through IAM roles — no per-employee IAM users needed." }, C: { text: "An IAM user per employee", explanation: "Per-employee IAM users is the anti-pattern being avoided — doesn't scale and creates long-lived credential management overhead." }, D: { text: "Access keys shared via email", explanation: "Sharing access keys via email is fundamentally insecure — unauditable and impossible to revoke cleanly." } } },
+  { q: "A workload requires shared, low-latency file storage accessed concurrently by hundreds of Linux EC2 instances, and storage must scale automatically. Which service should the architect choose?", correct: "B", options: { A: { text: "Amazon EBS Multi-Attach", explanation: "EBS Multi-Attach is limited to specific io1/io2 volume types, same AZ only, and a limited number of instances — not designed for hundreds of concurrent instances." }, B: { text: "Amazon EFS", explanation: "Correct. EFS is a shared elastic NFS file system — supports any number of concurrent Linux EC2 instances across AZs, scales automatically." }, C: { text: "Amazon S3", explanation: "S3 is object storage, not a POSIX file system — high latency and doesn't support shared file system semantics." }, D: { text: "Instance store", explanation: "Instance store is ephemeral local storage tied to each instance — can't be shared." } } },
+  { q: "A company wants to reduce the blast radius of a compromised set of credentials and ensure temporary credentials with a maximum permission ceiling for a contractor's IAM role, even if a broader policy is attached. What should the architect apply?", correct: "B", options: { A: { text: "A resource-based policy", explanation: "Resource-based policies control who can access a specific resource — they don't cap the identity's overall permission ceiling." }, B: { text: "An IAM permissions boundary on the role", explanation: "Correct. A permissions boundary sets the maximum effective permissions for a role — any attached policy beyond the boundary is silently ignored." }, C: { text: "A larger managed policy", explanation: "A larger policy widens permissions — the opposite of limiting blast radius." }, D: { text: "An access control list", explanation: "ACLs are legacy S3/network controls — not an IAM identity permission ceiling mechanism." } } },
+  { q: "A solutions architect needs the most cost-effective storage for data that is accessed once or twice a quarter, must be available within milliseconds when needed, and is stored long-term. Which S3 storage class fits best?", correct: "B", options: { A: { text: "S3 Standard", explanation: "Standard is more expensive per-GB than IA tiers — you pay full price for data you rarely access." }, B: { text: "S3 Standard-IA", explanation: "Correct. Standard-IA = lower per-GB cost for infrequent access, millisecond retrieval when needed, and multi-AZ durability." }, C: { text: "S3 Glacier Deep Archive", explanation: "Deep Archive has retrieval times of 12 hours — doesn't meet 'within milliseconds when needed'." }, D: { text: "S3 One Zone-IA for irreplaceable data", explanation: "One Zone-IA stores in a single AZ — data loss on AZ failure is unacceptable for irreplaceable data." } } },
+  { q: "An application tier must call a downstream service that is sometimes slow. The architect wants to decouple them and let the application keep accepting requests while work is processed asynchronously, with automatic retries. Which design is best?", correct: "B", options: { A: { text: "Synchronous REST calls with a longer timeout", explanation: "Longer timeouts keep the tiers tightly coupled — the app still blocks, consuming threads and connections while waiting." }, B: { text: "Place an SQS queue between the tiers; workers process asynchronously with retries and a DLQ", explanation: "Correct. SQS decouples the tiers — the app returns immediately; workers process at their own pace with built-in retries and DLQ for failures." }, C: { text: "Increase the downstream service's instance size", explanation: "Bigger instance may help under load but doesn't decouple the tiers or prevent blocking." }, D: { text: "Add a CloudFront distribution", explanation: "CloudFront is a CDN for content delivery — completely unrelated to backend service decoupling." } } },
+  { q: "A company runs steady, predictable production workloads on EC2 24/7 and wants to maximize savings over the next 3 years while retaining flexibility to change instance families and move some workloads to Fargate. Which purchase option is best?", correct: "C", options: { A: { text: "On-Demand Instances", explanation: "On-Demand is the most expensive — no savings for steady committed usage." }, B: { text: "Standard Reserved Instances for specific instance types", explanation: "Standard RIs lock you to a specific instance type and family — less flexible than Savings Plans for cross-family and Fargate." }, C: { text: "Compute Savings Plans", explanation: "Correct. Compute Savings Plans give up to 66–72% savings with flexibility across EC2 instance families, sizes, Regions, and Fargate." }, D: { text: "Spot Instances", explanation: "Spot Instances can be reclaimed — not suitable for steady production workloads that must stay available." } } },
+  { q: "A solutions architect must protect a public REST API built on API Gateway and Lambda from being overwhelmed by excessive requests, and authenticate callers. Which features should the architect use? (Choose TWO.)", correct: ["A","C"], multi: true, options: { A: { text: "API Gateway throttling and usage plans", explanation: "Correct. API Gateway throttling limits request rates per API; usage plans control per-key quotas to prevent overwhelming the backend." }, B: { text: "A larger Lambda memory setting", explanation: "More memory speeds up individual invocations but doesn't cap the total number of requests — doesn't prevent being overwhelmed." }, C: { text: "Amazon Cognito user pools or a Lambda authorizer for authentication", explanation: "Correct. Cognito user pool authorizer or a Lambda authorizer validates caller identity before requests are processed." }, D: { text: "A NAT gateway", explanation: "NAT gateway is for outbound internet from private subnets — irrelevant to API authentication or rate limiting." }, E: { text: "EC2 Auto Scaling", explanation: "EC2 Auto Scaling is for EC2 fleets — this is a serverless API Gateway + Lambda architecture." } } },
+  { q: "A company's compliance team needs to be automatically alerted and have the resource remediated whenever an S3 bucket is created without encryption. Which service provides config-rule evaluation with auto-remediation?", correct: "B", options: { A: { text: "AWS CloudTrail", explanation: "CloudTrail records the bucket creation API call but doesn't evaluate compliance rules or trigger automated remediation." }, B: { text: "AWS Config with remediation actions", explanation: "Correct. AWS Config rules continuously evaluate S3 encryption configuration; remediation actions (via SSM Automation) can automatically fix non-compliant buckets." }, C: { text: "Amazon GuardDuty", explanation: "GuardDuty detects security threats (compromised credentials, suspicious behavior) — not configuration compliance violations." }, D: { text: "Amazon Inspector", explanation: "Inspector scans for software vulnerabilities in EC2/containers — not S3 bucket configuration compliance." } } },
+  { q: "An application stores infrequently accessed but mission-critical, irreplaceable backups that must survive the loss of an Availability Zone. Which S3 storage class should the architect avoid, and what should be used instead?", correct: "B", options: { A: { text: "Use One Zone-IA for lowest cost", explanation: "One Zone-IA stores data in a single AZ — an AZ failure means permanent, unrecoverable data loss for irreplaceable backups." }, B: { text: "Use Standard-IA (multi-AZ); avoid One Zone-IA because it stores data in a single AZ", explanation: "Correct. Standard-IA provides multi-AZ durability (11 nines) at lower cost than Standard — right for infrequent but critical data." }, C: { text: "Use Reduced Redundancy Storage", explanation: "Reduced Redundancy Storage is deprecated and has lower durability than Standard — worse choice than Standard-IA." }, D: { text: "Use instance store snapshots", explanation: "Instance store volumes are ephemeral and not EBS-backed — this isn't a valid S3 storage class at all." } } },
+  { q: "A team needs to migrate an on-premises Oracle database to Amazon Aurora PostgreSQL with minimal downtime, converting the schema in the process. Which combination should the architect use?", correct: "B", options: { A: { text: "AWS DataSync only", explanation: "DataSync is for file and object data migration — not live relational database migration or schema conversion." }, B: { text: "AWS Database Migration Service (DMS) with the Schema Conversion Tool (SCT)", explanation: "Correct. SCT converts the Oracle schema to Aurora PostgreSQL; DMS provides ongoing replication for minimal-downtime cutover." }, C: { text: "A manual mysqldump export/import", explanation: "mysqldump is for MySQL — wrong engine. Also causes significant downtime for large databases." }, D: { text: "Snowball Edge", explanation: "Snowball Edge ships bulk file data — doesn't handle live database migration or schema conversion." } } },
+  { q: "A company wants to centrally provision identical, version-controlled infrastructure across multiple accounts and Regions, and detect when someone changes resources manually. Which service should the architect use?", correct: "A", options: { A: { text: "AWS CloudFormation with drift detection (and StackSets for multi-account/Region)", explanation: "Correct. CloudFormation + StackSets provisions identical IaC across accounts/Regions; drift detection alerts when resources are modified outside of CloudFormation." }, B: { text: "Manual setup documented in a wiki", explanation: "Manual setup documented in a wiki is not infrastructure as code — not repeatable, not drift-detectable." }, C: { text: "AWS Config only", explanation: "Config detects configuration changes after the fact but doesn't provision or manage infrastructure as code." }, D: { text: "Elastic Beanstalk", explanation: "Elastic Beanstalk deploys web application environments — not a multi-account infrastructure provisioning service." } } }
+];
+
+let selected = new Array(questions.length).fill(null);
+let revealed = new Array(questions.length).fill(false);
+
+function isCorrect(qIndex) {
+  const q = questions[qIndex];
+  const sel = selected[qIndex];
+  if (q.multi) { if (!sel || sel.size !== q.correct.length) return false; return q.correct.every(c => sel.has(c)); }
+  return sel === q.correct;
+}
+
+function updateScore() {
+  const answeredCount = revealed.filter(Boolean).length;
+  const correctCount = revealed.filter((r, i) => r && isCorrect(i)).length;
+  document.getElementById('score-display').innerHTML = `${correctCount} <span>/ ${answeredCount}</span>`;
+  document.getElementById('answered-display').innerHTML = `${answeredCount} <span>/ ${questions.length}</span>`;
+}
+
+function selectOption(qIndex, letter) {
+  if (revealed[qIndex]) return;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  const optEl = card.querySelector(`[data-opt="${letter}"]`);
+  if (q.multi) {
+    if (!selected[qIndex]) selected[qIndex] = new Set();
+    if (selected[qIndex].has(letter)) { selected[qIndex].delete(letter); optEl.classList.remove('selected'); }
+    else { selected[qIndex].add(letter); optEl.classList.add('selected'); }
+    card.querySelector('.reveal-btn').disabled = selected[qIndex].size === 0;
+  } else {
+    selected[qIndex] = letter;
+    card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    optEl.classList.add('selected');
+    card.querySelector('.reveal-btn').disabled = false;
+  }
+}
+
+function reveal(qIndex) {
+  if (revealed[qIndex]) return;
+  revealed[qIndex] = true;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  const sel = q.multi ? (selected[qIndex] || new Set()) : new Set(selected[qIndex] ? [selected[qIndex]] : []);
+  const correctSet = new Set(q.multi ? q.correct : [q.correct]);
+  card.classList.add('answered');
+  card.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    const letter = opt.dataset.opt;
+    const isC = correctSet.has(letter), isS = sel.has(letter);
+    opt.classList.remove('selected');
+    if (isC && isS) opt.classList.add('correct');
+    else if (isC && !isS) opt.classList.add('missed');
+    else if (!isC && isS) opt.classList.add('wrong');
+    else opt.classList.add('neutral');
+  });
+  const btn = card.querySelector('.reveal-btn');
+  btn.disabled = true; btn.textContent = 'Revealed';
+  const badge = card.querySelector('.result-badge');
+  badge.style.display = 'inline-block';
+  const correct = isCorrect(qIndex);
+  const correctLabel = q.multi ? q.correct.join(' & ') : q.correct;
+  if (correct) { badge.className = 'result-badge correct-badge'; badge.textContent = 'Correct'; }
+  else { badge.className = 'result-badge wrong-badge'; badge.textContent = sel.size === 0 ? `No answer — ${correctLabel} correct` : `Wrong — ${correctLabel} correct`; }
+  updateScore();
+}
+
+function resetAll() {
+  selected = new Array(questions.length).fill(null);
+  revealed = new Array(questions.length).fill(false);
+  render(); updateScore();
+}
+
+function render() {
+  document.getElementById('quiz').innerHTML = questions.map((q, i) => `
+    <div class="question-card" data-q="${i}">
+      <div class="question-header"><span class="q-number">Q${i+1}</span>
+        <div style="flex:1"><div class="q-text">${q.q}</div>${q.multi ? '<div class="q-multi-hint">▸ Choose TWO</div>' : ''}</div>
+      </div>
+      <div class="options">${Object.entries(q.options).map(([letter, opt]) => `
+        <div class="option" data-opt="${letter}" onclick="selectOption(${i},'${letter}')">
+          <div class="option-letter">${letter}</div>
+          <div class="option-body"><div class="option-text">${opt.text}</div><div class="option-explanation">${opt.explanation}</div></div>
+          <div class="option-icon"></div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;margin-top:1rem;">
+        <button class="reveal-btn" onclick="reveal(${i})" disabled>Reveal Answer</button>
+        <span class="result-badge"></span>
+      </div>
+    </div>`).join('');
+}
+
+render(); updateScore();
+</script>
+</body>
+</html>

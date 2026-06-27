@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain 1 — Design Secure Architectures</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container { max-width: 780px; margin: 0 auto; }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #f8fafc;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-bottom: 2rem;
+    }
+
+    .scoreboard {
+      background: #1e2433;
+      border: 1px solid #2d3748;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    .score-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem; }
+    .score-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .score-value span { font-size: 0.9rem; color: #64748b; font-weight: 400; }
+
+    .reset-btn {
+      margin-left: auto;
+      background: #1e2433;
+      border: 1px solid #374151;
+      color: #94a3b8;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .reset-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+
+    .question-card {
+      background: #1e2433;
+      border: 1px solid #2d3748;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+      transition: border-color 0.2s;
+    }
+
+    .question-card.answered { border-color: #374151; }
+
+    .question-header {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      margin-bottom: 1.1rem;
+    }
+
+    .q-number {
+      background: #2d3748;
+      color: #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 5px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .q-text { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; }
+
+    .options { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .option {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      padding: 0.65rem 0.9rem;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+
+    .option:hover:not(.disabled) { border-color: #6366f1; background: #252d3f; }
+    .option.selected { border-color: #6366f1; background: #252d3f; }
+    .option.disabled { cursor: default; }
+
+    .option.correct  { border-color: #22c55e; background: #052e16; }
+    .option.wrong    { border-color: #ef4444; background: #2d0a0a; }
+    .option.missed   { border-color: #f59e0b; background: #1c1500; }
+
+    .option-letter {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #64748b;
+      flex-shrink: 0;
+      margin-top: 1px;
+      width: 1rem;
+      text-align: center;
+    }
+
+    .option.correct  .option-letter { color: #22c55e; }
+    .option.wrong    .option-letter { color: #ef4444; }
+    .option.missed   .option-letter { color: #f59e0b; }
+    .option.selected .option-letter { color: #818cf8; }
+
+    .option-body { flex: 1; }
+    .option-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.45; }
+    .option-explanation {
+      display: none;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-top: 0.4rem;
+      line-height: 1.5;
+    }
+
+    .option.correct  .option-explanation,
+    .option.wrong    .option-explanation,
+    .option.missed   .option-explanation,
+    .option.neutral  .option-explanation { display: block; }
+
+    .option.correct  .option-explanation { color: #86efac; }
+    .option.wrong    .option-explanation { color: #fca5a5; }
+    .option.missed   .option-explanation { color: #fcd34d; }
+    .option.neutral  .option-explanation { color: #64748b; }
+
+    .option-icon {
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      margin-top: 2px;
+      display: none;
+    }
+    .option.correct .option-icon::after  { content: "✓"; color: #22c55e; display: block; }
+    .option.wrong   .option-icon::after  { content: "✗"; color: #ef4444; display: block; }
+    .option.missed  .option-icon::after  { content: "✓"; color: #f59e0b; display: block; }
+    .option.correct .option-icon,
+    .option.wrong   .option-icon,
+    .option.missed  .option-icon { display: block; }
+
+    .reveal-btn {
+      margin-top: 1rem;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      padding: 0.5rem 1.2rem;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: background 0.15s, opacity 0.15s;
+    }
+    .reveal-btn:hover { background: #4f46e5; }
+    .reveal-btn:disabled { opacity: 0.4; cursor: default; }
+
+    .result-badge {
+      display: none;
+      margin-left: 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+    .result-badge.correct-badge { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .result-badge.wrong-badge   { background: #2d0a0a; color: #ef4444; border: 1px solid #991b1b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Domain 1 — Design Secure Architectures</h1>
+  <p class="subtitle">Select an answer, then click Reveal to see the explanation.</p>
+
+  <div class="scoreboard">
+    <div>
+      <div class="score-label">Score</div>
+      <div class="score-value" id="score-display">0 <span>/ 10</span></div>
+    </div>
+    <div>
+      <div class="score-label">Answered</div>
+      <div class="score-value" id="answered-display">0 <span>/ 10</span></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+
+  <div id="quiz"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "An application on EC2 needs to read objects from an S3 bucket. A developer stored IAM access keys in the application's config file. What is the most secure way to grant access?",
+    correct: "B",
+    options: {
+      A: { text: "Rotate the access keys every 30 days", explanation: "Rotating keys reduces the exposure window but long-lived credentials still exist in the config file — a leak is still possible." },
+      B: { text: "Attach an IAM role to the EC2 instance via an instance profile", explanation: "Correct. Instance profiles give EC2 temporary, automatically-rotated credentials via the instance metadata service. No long-lived keys needed anywhere." },
+      C: { text: "Store the keys in environment variables", explanation: "Still long-lived credentials — just stored in a different place. Any process on the instance can read env vars." },
+      D: { text: "Use a bucket ACL granting the developer's user access", explanation: "Bucket ACLs are legacy and don't help an EC2 application authenticate. They also don't remove the need for credentials." }
+    }
+  },
+  {
+    q: "A company must block traffic from a single malicious IP address to all instances in a subnet. Which control should they use?",
+    correct: "B",
+    options: {
+      A: { text: "Security group inbound deny rule", explanation: "Security groups are stateful and allow-only — there is no deny rule option. You can only add allow rules." },
+      B: { text: "Network ACL deny rule on the subnet", explanation: "Correct. NACLs are stateless, support explicit deny rules, and operate at the subnet level — exactly right for blocking a specific IP across all instances." },
+      C: { text: "IAM policy with explicit deny", explanation: "IAM controls API-level access to AWS services, not network-level traffic to EC2 instances." },
+      D: { text: "Route table blackhole route", explanation: "Route tables control where traffic is routed, but you can't filter by source IP with a route table entry." }
+    }
+  },
+  {
+    q: "A regulated workload requires the company to fully control and audit encryption keys, with dedicated single-tenant hardware that meets FIPS 140-2 Level 3. Which service?",
+    correct: "C",
+    options: {
+      A: { text: "AWS KMS with AWS managed keys", explanation: "AWS manages the keys and the hardware is multi-tenant. Doesn't meet single-tenant or FIPS Level 3 requirements." },
+      B: { text: "AWS KMS with customer managed keys", explanation: "You control key policies, but the underlying HSM hardware is still shared (multi-tenant). FIPS Level 2, not Level 3." },
+      C: { text: "AWS CloudHSM", explanation: "Correct. CloudHSM is dedicated single-tenant hardware, customer-controlled, and meets FIPS 140-2 Level 3." },
+      D: { text: "AWS Secrets Manager", explanation: "Secrets Manager stores and rotates credentials/secrets — it's not an encryption key management or HSM service." }
+    }
+  },
+  {
+    q: "A team needs RDS database credentials to rotate automatically every 30 days without code changes. Which service?",
+    correct: "B",
+    options: {
+      A: { text: "SSM Parameter Store SecureString", explanation: "Parameter Store can store secrets securely but has no built-in automatic rotation capability." },
+      B: { text: "AWS Secrets Manager", explanation: "Correct. Secrets Manager natively integrates with RDS and rotates credentials on a schedule. The application just calls the API — no code change needed when rotation happens." },
+      C: { text: "AWS KMS", explanation: "KMS manages encryption keys, not application credentials. It doesn't rotate RDS passwords." },
+      D: { text: "IAM database authentication", explanation: "IAM DB auth uses short-lived tokens instead of passwords — useful but doesn't address rotating a traditional password on a schedule." }
+    }
+  },
+  {
+    q: "A security team wants to be alerted to potential account compromise by analyzing VPC Flow Logs, DNS logs, and CloudTrail with no agents to deploy. Which service?",
+    correct: "C",
+    options: {
+      A: { text: "Amazon Inspector", explanation: "Inspector scans for vulnerabilities in EC2 and container images. It doesn't analyze Flow Logs or CloudTrail for threat patterns." },
+      B: { text: "Amazon Macie", explanation: "Macie discovers and classifies sensitive data (PII) in S3. Not a threat detection service." },
+      C: { text: "Amazon GuardDuty", explanation: "Correct. GuardDuty is fully agentless and analyzes exactly those three sources — VPC Flow Logs, DNS query logs, and CloudTrail — to detect threats." },
+      D: { text: "AWS Config", explanation: "Config tracks configuration compliance and drift. It doesn't do threat detection or analyze DNS/Flow Logs for attack patterns." }
+    }
+  },
+  {
+    q: "A company runs multiple AWS accounts under Organizations and wants to guarantee that no account — even an account admin — can disable CloudTrail. What should they use?",
+    correct: "B",
+    options: {
+      A: { text: "An IAM permissions boundary", explanation: "Permissions boundaries apply to individual IAM identities within an account — an account administrator can simply remove the boundary from themselves." },
+      B: { text: "A Service Control Policy (SCP)", explanation: "Correct. SCPs set a hard permissions ceiling that applies to every principal in an account, including root. Even the account admin cannot exceed what an SCP allows." },
+      C: { text: "A resource-based policy on CloudTrail", explanation: "Resource-based policies control access to a resource but the account admin has full permissions to modify or remove those policies." },
+      D: { text: "An IAM group policy applied to all users", explanation: "Group policies only apply to IAM users in the group. An admin can remove themselves from the group or act as root." }
+    }
+  },
+  {
+    q: "Static assets in a private S3 bucket must be served only through CloudFront, never directly. What achieves this?",
+    correct: "B",
+    options: {
+      A: { text: "Make the bucket public and add a bucket policy", explanation: "Making the bucket public means anyone can access S3 directly — the opposite of the requirement." },
+      B: { text: "Use Origin Access Control (OAC) and a bucket policy restricting access to the distribution", explanation: "Correct. OAC gives the CloudFront distribution an identity, and the bucket policy allows only that identity. Direct S3 access is denied to everyone else." },
+      C: { text: "Enable S3 Transfer Acceleration", explanation: "Transfer Acceleration speeds up uploads to S3 over long distances. It has nothing to do with access control." },
+      D: { text: "Use a presigned URL for each object", explanation: "Presigned URLs grant temporary direct S3 access — they bypass CloudFront entirely, which violates the requirement." }
+    }
+  },
+  {
+    q: "Auditors ask \"who deleted this DynamoDB table and when?\" Which service provides the answer?",
+    correct: "C",
+    options: {
+      A: { text: "CloudWatch Logs", explanation: "CloudWatch Logs captures application and service logs, not AWS API call history with actor details." },
+      B: { text: "AWS Config", explanation: "Config records configuration state changes but doesn't capture who made an API call — only that a change occurred." },
+      C: { text: "CloudTrail", explanation: "Correct. CloudTrail logs every API call with the caller identity, timestamp, source IP, and request parameters. Exactly what auditors need." },
+      D: { text: "VPC Flow Logs", explanation: "VPC Flow Logs capture network traffic metadata (IP, port, bytes) — not API calls or their actors." }
+    }
+  },
+  {
+    q: "A web application must be protected from SQL injection and cross-site scripting at the edge. Which service?",
+    correct: "B",
+    options: {
+      A: { text: "AWS Shield Standard", explanation: "Shield Standard protects against DDoS attacks at the network/transport layer. It doesn't inspect HTTP payloads for SQLi or XSS." },
+      B: { text: "AWS WAF", explanation: "Correct. WAF is a Layer 7 web application firewall with managed rules for SQLi and XSS. It attaches to CloudFront, ALB, or API Gateway." },
+      C: { text: "Security groups", explanation: "Security groups operate at Layer 4 (IP/port). They have no payload inspection capability and can't detect SQLi or XSS." },
+      D: { text: "GuardDuty", explanation: "GuardDuty is a threat detection service that analyzes logs after the fact. It doesn't filter or block requests in real time." }
+    }
+  },
+  {
+    q: "A company must discover and classify PII stored across hundreds of S3 buckets. Which service?",
+    correct: "A",
+    options: {
+      A: { text: "Amazon Macie", explanation: "Correct. Macie uses machine learning to automatically discover, classify, and alert on sensitive data including PII across S3 buckets." },
+      B: { text: "Amazon Inspector", explanation: "Inspector scans for software vulnerabilities in EC2 and containers. It doesn't scan S3 data for PII." },
+      C: { text: "AWS Config", explanation: "Config evaluates resource configurations against rules. It doesn't examine the contents of S3 objects for sensitive data." },
+      D: { text: "Amazon Detective", explanation: "Detective is a security investigation tool that helps you analyze and visualize potential threats. It doesn't classify data." }
+    }
+  }
+];
+
+let selected = new Array(questions.length).fill(null);
+let revealed = new Array(questions.length).fill(false);
+
+function updateScore() {
+  const answeredCount = revealed.filter(Boolean).length;
+  const correctCount = revealed.filter((r, i) => r && selected[i] === questions[i].correct).length;
+  document.getElementById('score-display').innerHTML = `${correctCount} <span>/ ${answeredCount}</span>`;
+  document.getElementById('answered-display').innerHTML = `${answeredCount} <span>/ ${questions.length}</span>`;
+}
+
+function selectOption(qIndex, letter) {
+  if (revealed[qIndex]) return;
+  selected[qIndex] = letter;
+
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+  card.querySelector(`[data-opt="${letter}"]`).classList.add('selected');
+
+  card.querySelector('.reveal-btn').disabled = false;
+}
+
+function reveal(qIndex) {
+  if (revealed[qIndex]) return;
+  revealed[qIndex] = true;
+
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  const userAnswer = selected[qIndex];
+
+  card.classList.add('answered');
+  card.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    const letter = opt.dataset.opt;
+    if (letter === q.correct && letter === userAnswer) {
+      opt.classList.remove('selected');
+      opt.classList.add('correct');
+    } else if (letter === q.correct) {
+      opt.classList.add('missed');
+    } else if (letter === userAnswer) {
+      opt.classList.add('wrong');
+    } else {
+      opt.classList.add('neutral');
+    }
+  });
+
+  const btn = card.querySelector('.reveal-btn');
+  btn.disabled = true;
+  btn.textContent = 'Revealed';
+
+  const badge = card.querySelector('.result-badge');
+  badge.style.display = 'inline-block';
+  if (userAnswer === q.correct) {
+    badge.className = 'result-badge correct-badge';
+    badge.textContent = 'Correct';
+  } else {
+    badge.className = 'result-badge wrong-badge';
+    badge.textContent = userAnswer ? `Wrong — ${q.correct} is correct` : `No answer — ${q.correct} is correct`;
+  }
+
+  updateScore();
+}
+
+function resetAll() {
+  selected = new Array(questions.length).fill(null);
+  revealed = new Array(questions.length).fill(false);
+  render();
+  updateScore();
+}
+
+function render() {
+  const container = document.getElementById('quiz');
+  container.innerHTML = questions.map((q, i) => {
+    const letters = Object.keys(q.options);
+    const optionsHtml = letters.map(letter => `
+      <div class="option" data-opt="${letter}" onclick="selectOption(${i}, '${letter}')">
+        <div class="option-letter">${letter}</div>
+        <div class="option-body">
+          <div class="option-text">${q.options[letter].text}</div>
+          <div class="option-explanation">${q.options[letter].explanation}</div>
+        </div>
+        <div class="option-icon"></div>
+      </div>
+    `).join('');
+
+    return `
+      <div class="question-card" data-q="${i}">
+        <div class="question-header">
+          <span class="q-number">Q${i + 1}</span>
+          <span class="q-text">${q.q}</span>
+        </div>
+        <div class="options">${optionsHtml}</div>
+        <div style="display:flex;align-items:center;margin-top:1rem;">
+          <button class="reveal-btn" onclick="reveal(${i})" disabled>Reveal Answer</button>
+          <span class="result-badge"></span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+render();
+updateScore();
+</script>
+</body>
+</html>

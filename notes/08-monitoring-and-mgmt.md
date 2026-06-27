@@ -17,6 +17,21 @@ CloudWatch is AWS's monitoring and observability service. It collects, stores, a
 
 ---
 
+## X-Ray (distributed tracing)
+
+X-Ray traces requests end-to-end as they travel through a distributed application — across Lambda functions, API Gateway, EC2 services, DynamoDB, and more. It builds a **service map** that shows each component and the latency/error rate between them, making it easy to pinpoint exactly which service in a chain is slow or failing.
+
+X-Ray is the answer any time a question describes a microservices or serverless app and asks how to identify *where* a performance bottleneck or error is occurring.
+
+Don't confuse it with:
+- **CloudWatch** → metrics and logs (what is happening, how often)
+- **CloudTrail** → API audit (who did what, when)
+- **X-Ray** → request tracing (which service in my call chain is the problem)
+
+- Keyword "trace requests across microservices / find latency in distributed app / service map / end-to-end visibility" → **X-Ray**.
+
+---
+
 ## CloudTrail (API audit log)
 
 CloudTrail records every API call made in your AWS account — including calls made through the console, CLI, SDKs, and other AWS services acting on your behalf. For each event, it captures who made the call (the IAM identity), what action was taken, when it happened, from what IP address, and whether the request succeeded or was denied.
@@ -83,6 +98,16 @@ SSM is a broad management service that lets you operate your EC2 instances and o
 - **Rolling** — updates instances in small batches, leaving the rest serving traffic. Reduces capacity during deployment but no separate environment needed.
 - **Blue/Green** — creates a completely new environment (green) and shifts traffic to it when it's ready. The old environment (blue) stays running, making rollback as simple as switching traffic back. No downtime and clean rollback, but requires double the resources temporarily.
 - **Canary** — a variant of blue/green where a small percentage of traffic (say 5%) goes to the new version first. If no issues arise after a period, you gradually shift more traffic. Reduces blast radius of bad deployments.
+- **Immutable** — never modify running instances. Every deployment provisions a brand-new set of instances with the new version alongside the old ones. Once the new instances pass health checks, traffic switches over and the old instances are terminated. No config drift possible because nothing is mutated in place. Elastic Beanstalk supports this explicitly as "immutable updates." More expensive than rolling (you briefly pay for double the instances) but safer — rollback is just terminating the new fleet.
+
+Quick comparison for the exam:
+
+| Strategy | Downtime | Rollback speed | Cost during deploy | Config drift risk |
+|---|---|---|---|---|
+| In-place / Rolling | Possible | Slow (re-deploy old) | Low | Yes |
+| Blue/Green | None | Instant (flip traffic) | 2× temporarily | No |
+| Canary | None | Fast (drain small %) | 2× temporarily | No |
+| Immutable | None | Fast (terminate new fleet) | 2× temporarily | No |
 
 ---
 

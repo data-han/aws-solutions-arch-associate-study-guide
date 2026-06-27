@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAA-C03 · 30 Question Practice Exam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0e0f13;
+  --paper: #f5f3ee;
+  --card: #ffffff;
+  --line: #ddd9d0;
+  --muted: #888077;
+  --orange: #e8621a;
+  --orange-soft: #fdf0e8;
+  --green: #1a7a4a;
+  --green-soft: #e8f5ee;
+  --red: #c0392b;
+  --red-soft: #fdecea;
+  --d1: #1a3a6b;
+  --d1-soft: #e8eef7;
+  --d2: #2d6a4f;
+  --d2-soft: #e8f3ee;
+  --d3: #6b3a1a;
+  --d3-soft: #f7ede8;
+  --d4: #4a1a6b;
+  --d4-soft: #f0e8f7;
+  --sans: 'DM Sans', sans-serif;
+  --display: 'Syne', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.65;
+  min-height: 100vh;
+}
+
+/* ── Masthead ── */
+.masthead {
+  background: var(--ink);
+  padding: 28px 32px 24px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.masthead-left { display: flex; flex-direction: column; gap: 4px; }
+.cert-tag {
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  color: var(--orange);
+  text-transform: uppercase;
+}
+.masthead-title {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.masthead-sub {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+.score-block {
+  background: #1a1c22;
+  border: 1px solid #2e3039;
+  border-radius: 10px;
+  padding: 14px 20px;
+  text-align: right;
+  min-width: 160px;
+}
+.score-num {
+  font-family: var(--display);
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--orange);
+  line-height: 1;
+}
+.score-label {
+  font-size: 11px;
+  color: #666;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.tag-btn {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tag-btn:hover { border-color: var(--ink); color: var(--ink); }
+.tag-btn.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+.tag-btn.d1.on { background: var(--d1); border-color: var(--d1); }
+.tag-btn.d2.on { background: var(--d2); border-color: var(--d2); }
+.tag-btn.d3.on { background: var(--d3); border-color: var(--d3); }
+.tag-btn.d4.on { background: var(--d4); border-color: var(--d4); }
+.toolbar-gap { flex: 1; }
+.act-btn {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.act-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+.act-btn.accent { background: var(--orange); color: #fff; border-color: var(--orange); font-weight: 600; }
+.act-btn.accent:hover { background: #c7511a; border-color: #c7511a; }
+
+/* ── Progress ── */
+.progress-rail {
+  height: 3px;
+  background: var(--line);
+  position: sticky;
+  top: 53px;
+  z-index: 49;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--orange);
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+/* ── Grid ── */
+.grid {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Card ── */
+.qcard {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.qcard:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.qcard.correct { border-left: 4px solid var(--green); }
+.qcard.wrong   { border-left: 4px solid var(--red); }
+.qcard.hidden  { display: none; }
+
+/* ── Header ── */
+.qhead {
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  user-select: none;
+}
+.qindex {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  padding-top: 2px;
+  min-width: 30px;
+}
+.qhead-right { flex: 1; }
+.badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 7px; }
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.badge-d1 { background: var(--d1-soft); color: var(--d1); }
+.badge-d2 { background: var(--d2-soft); color: var(--d2); }
+.badge-d3 { background: var(--d3-soft); color: var(--d3); }
+.badge-d4 { background: var(--d4-soft); color: var(--d4); }
+.badge-mc { background: #f0f0f0; color: #555; }
+.badge-mr { background: #fff8e8; color: #8a6000; }
+.qstem { font-size: 14px; color: var(--ink); line-height: 1.6; font-weight: 400; }
+.qarrow {
+  font-size: 18px;
+  color: var(--muted);
+  padding-top: 2px;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.qcard.open .qarrow { transform: rotate(180deg); }
+
+/* ── Body ── */
+.qbody { display: none; border-top: 1px solid var(--line); }
+.qcard.open .qbody { display: block; }
+
+/* ── Options ── */
+.opts { padding: 14px 20px 0; display: flex; flex-direction: column; gap: 7px; }
+.opt {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.opt:hover { border-color: var(--orange); background: var(--orange-soft); }
+.opt.sel { border-color: var(--orange); background: var(--orange-soft); }
+.opt.rev-ok  { border-color: var(--green); background: var(--green-soft); cursor: default; }
+.opt.rev-bad { border-color: #ddd; background: #fafafa; cursor: default; }
+.opt-letter {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  min-width: 16px;
+  padding-top: 1px;
+}
+.opt.rev-ok  .opt-letter { color: var(--green); }
+.opt.rev-bad .opt-letter { color: #ccc; }
+.opt-text { font-size: 14px; color: var(--ink); line-height: 1.5; }
+.opt.rev-bad .opt-text { color: #aaa; }
+
+/* ── Show answer ── */
+.show-wrap { padding: 14px 20px; }
+.show-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+}
+.show-btn:hover { border-color: var(--orange); color: var(--orange); border-style: solid; background: var(--orange-soft); }
+.show-btn.done { opacity: 0.4; cursor: default; border-style: solid; }
+
+/* ── Explanation ── */
+.expwrap { display: none; padding: 0 20px 20px; }
+.qcard.open.revealed .expwrap { display: block; }
+.exp-rule-line {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 16px 0 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.exp-opts { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.exp-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.exp-row.ok  { background: var(--green-soft); }
+.exp-row.bad { background: #fafafa; }
+.exp-ltr {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 16px;
+}
+.exp-row.ok  .exp-ltr { color: var(--green); }
+.exp-row.bad .exp-ltr { color: #bbb; }
+.exp-body { color: var(--muted); }
+.exp-body strong { color: var(--ink); }
+.key-rule {
+  background: var(--orange-soft);
+  border: 1px solid #f0c99a;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #8a3d08;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.key-rule::before { content: '⚡ '; }
+
+/* ── Scroll top ── */
+#top-btn {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--ink); color: #fff;
+  border: none; cursor: pointer; font-size: 18px;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+#top-btn.vis { opacity: 1; pointer-events: auto; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-left">
+    <div class="cert-tag">AWS Certified</div>
+    <div class="masthead-title">Solutions Architect<br>Associate — SAA-C03</div>
+    <div class="masthead-sub">30 Questions &nbsp;·&nbsp; Weighted by domain &nbsp;·&nbsp; Open in browser, works offline</div>
+  </div>
+  <div class="score-block">
+    <div class="score-num" id="scoreNum">0/0</div>
+    <div class="score-label">Correct / Answered</div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="tag-btn on"    onclick="filt('all',this)">All 30</button>
+  <button class="tag-btn d1"   onclick="filt('1',this)">Domain 1 · Secure</button>
+  <button class="tag-btn d2"   onclick="filt('2',this)">Domain 2 · Resilient</button>
+  <button class="tag-btn d3"   onclick="filt('3',this)">Domain 3 · High-Performing</button>
+  <button class="tag-btn d4"   onclick="filt('4',this)">Domain 4 · Cost-Optimized</button>
+  <div class="toolbar-gap"></div>
+  <button class="act-btn" onclick="resetAll()">Reset</button>
+  <button class="act-btn" onclick="revealAll()">Reveal all</button>
+  <button class="act-btn accent" onclick="doShuffle()">⇄ Shuffle</button>
+</div>
+<div class="progress-rail"><div class="progress-fill" id="pbar"></div></div>
+
+<div class="grid" id="grid"></div>
+<button id="top-btn" onclick="scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const Q=[
+// ── DOMAIN 1: SECURE (9 questions) ──────────────────────────────────────────
+{id:0,d:1,t:'mc',
+stem:'A company has multiple AWS accounts in AWS Organizations. The security team must prevent any IAM user or role — including administrators — from disabling AWS CloudTrail in any member account. Which solution meets this requirement?',
+opts:{A:'Create an IAM policy in each account that denies cloudtrail:StopLogging and attach it to all roles.',B:'Enable AWS Config in each account to detect when CloudTrail is disabled and trigger an SNS alert.',C:'Create a Service Control Policy (SCP) that denies cloudtrail:StopLogging and attach it to the root OU.',D:'Deploy a CloudWatch Events rule in each account that re-enables CloudTrail if it is stopped.'},
+correct:['C'],
+exp:{A:'IAM policies can be overridden by an administrator — they cannot enforce a hard floor across accounts or against root.',B:'AWS Config is a detective control. It detects the change after it happens; it does not prevent it.',C:'SCPs are preventive controls applied at the AWS Organizations level. Attached to the root OU, they apply to every member account and no IAM principal — not even administrators — can override them.',D:'A CloudWatch Events rule reacts after the fact. There is a window during which CloudTrail is disabled.'},
+rule:'SCPs = preventive guardrails that no IAM principal in member accounts can override. "Prevent even admins" always = SCP on the root OU.'},
+
+{id:1,d:1,t:'mr',
+stem:'A solutions architect must allow a junior administrator to create IAM roles, but only with a maximum permission set defined by the security team. The junior admin must not be able to create roles with more permissions than they themselves have. Which TWO actions accomplish this? (Choose TWO)',
+opts:{A:'Attach a permissions boundary to the junior administrator\'s IAM user that limits the permissions they can grant.',B:'Use an SCP to deny iam:CreateRole for the junior administrator.',C:'Require the junior administrator to attach a specific permissions boundary to every role they create, enforced via the iam:PermissionsBoundary IAM condition key.',D:'Enable AWS Config to detect newly created roles with excessive permissions.',E:'Place the junior administrator in a separate OU with a restrictive SCP.'},
+correct:['A','C'],
+exp:{A:'A permissions boundary on the junior admin caps what they can do — they cannot grant permissions beyond their own boundary.',B:'Denying iam:CreateRole entirely prevents them from doing their job. That is not the requirement.',C:'The IAM condition key iam:PermissionsBoundary requires any role the junior admin creates to have a specific boundary attached. They cannot skip it.',D:'AWS Config is detective only — roles with excessive permissions could exist for minutes before detection.',E:'SCPs apply to accounts and OUs, not to individual IAM users within an account.'},
+rule:'Delegated role creation without privilege escalation = permissions boundary on the admin + IAM condition requiring that boundary on every role they create.'},
+
+{id:2,d:1,t:'mc',
+stem:'A web application allows consumers to sign in with Google or Facebook and then call AWS APIs (read from DynamoDB, write to S3) directly from the client. Which combination of services should the architect use?',
+opts:{A:'IAM users with long-term access keys distributed to the mobile client.',B:'AWS IAM Identity Center with an external IdP configured.',C:'Amazon Cognito User Pool for authentication and Amazon Cognito Identity Pool for temporary AWS credentials.',D:'AWS Directory Service AD Connector federated with IAM roles.'},
+correct:['C'],
+exp:{A:'Distributing long-term IAM access keys to a mobile client is a critical security anti-pattern — keys can be extracted from the app.',B:'IAM Identity Center is designed for workforce (employee) access across AWS accounts, not for consumer app users signing in with social providers.',C:'Cognito User Pool handles consumer authentication including Google and Facebook federation and issues JWTs. Cognito Identity Pool exchanges those JWTs for short-lived AWS credentials scoped to specific services. This is the canonical pattern.',D:'AD Connector integrates an on-premises Microsoft Active Directory with AWS — not consumer social identity providers.'},
+rule:'Consumer app + social login (Google/Facebook) + AWS resource access = Cognito User Pool (auth & JWT) + Cognito Identity Pool (temporary AWS credentials).'},
+
+{id:3,d:1,t:'mc',
+stem:'A financial services company must ensure objects in a compliance S3 bucket cannot be deleted or overwritten for exactly 7 years — by anyone, including the AWS account root user. Which S3 feature satisfies this?',
+opts:{A:'S3 Versioning with MFA Delete enabled.',B:'S3 Object Lock in Governance mode with a 7-year retention period.',C:'S3 Object Lock in Compliance mode with a 7-year retention period.',D:'An S3 bucket policy with an explicit Deny on s3:DeleteObject for all principals.'},
+correct:['C'],
+exp:{A:'MFA Delete requires MFA to delete object versions, but a user who possesses the MFA device can still delete. Not fully immutable.',B:'Governance mode allows users with the s3:BypassGovernanceRetention permission to delete before the retention period expires.',C:'Compliance mode is truly immutable — no user, including the account root, can delete or overwrite an object before its retention period expires. This satisfies strict WORM compliance requirements.',D:'A bucket policy can be modified by an account administrator and is therefore not immutable.'},
+rule:'Regulatory WORM, nobody can delete including root = S3 Object Lock Compliance mode. Governance mode = can bypass with permission.'},
+
+{id:4,d:1,t:'mc',
+stem:'A company stores sensitive customer data in Amazon S3. The security team needs an audit trail showing exactly which IAM principal decrypted a specific object and at what time. Which combination provides this?',
+opts:{A:'S3 server access logging with SSE-S3 (AES-256) default encryption.',B:'AWS CloudTrail data events enabled for the bucket, with SSE-KMS encryption using a Customer Managed Key.',C:'Amazon Macie automated discovery enabled on the bucket.',D:'AWS Config advanced queries on S3 object metadata.'},
+correct:['B'],
+exp:{A:'SSE-S3 uses AWS-managed keys and produces no per-object decrypt audit events. Server access logs record API calls but not KMS-level identity.',B:'SSE-KMS requires a KMS API call (GenerateDataKey or Decrypt) for every object decryption. CloudTrail records every KMS API call including the caller\'s IAM identity and timestamp — providing the exact audit trail required.',C:'Macie discovers and classifies sensitive data. It does not log who decrypted individual objects.',D:'AWS Config tracks resource configuration state, not object-level access events.'},
+rule:'"Who decrypted what and when" = SSE-KMS (every decrypt triggers a KMS API call) + CloudTrail (logs every KMS call with caller identity and timestamp).'},
+
+{id:5,d:1,t:'mc',
+stem:'A company needs operational shell access to EC2 instances in private subnets. The security policy prohibits opening any inbound ports on security groups, and all session activity must be logged for compliance. What is the recommended solution?',
+opts:{A:'Deploy a bastion host in a public subnet and allow SSH (port 22) from a trusted CIDR range.',B:'Use AWS Systems Manager Session Manager with IAM-based access control and session logging to CloudWatch Logs.',C:'Open port 22 on the security group but restrict it to the company\'s VPN CIDR block.',D:'Use EC2 Instance Connect to push a temporary SSH key and connect over the internet.'},
+correct:['B'],
+exp:{A:'A bastion host requires opening port 22 inbound on security groups and SSH key management — violates the no-inbound-ports requirement.',B:'Session Manager operates through the SSM agent with no inbound network rules. Sessions are encrypted end-to-end, logged to CloudWatch Logs or S3, and access is controlled via IAM policies.',C:'Opening port 22 — even restricted by CIDR — still violates the no-open-ports requirement.',D:'EC2 Instance Connect pushes a temporary key over the internet and still requires port 22 open on the security group.'},
+rule:'"No open ports + auditable shell access to private subnets" = Systems Manager Session Manager. Zero inbound security group rules needed.'},
+
+{id:6,d:1,t:'mc',
+stem:'A company uses Amazon RDS for its primary database. Credentials are currently hardcoded in application environment variables. The company wants centralised secret storage with automatic rotation on a 30-day schedule. Which service should the architect recommend?',
+opts:{A:'AWS Systems Manager Parameter Store with SecureString parameters.',B:'AWS Secrets Manager.',C:'AWS KMS with application-level envelope encryption.',D:'AWS Certificate Manager.'},
+correct:['B'],
+exp:{A:'Parameter Store SecureString encrypts values at rest using KMS but does not support automatic secret rotation natively. Rotation would require a custom Lambda function.',B:'Secrets Manager is purpose-built for managing database credentials with native automatic rotation for Amazon RDS, Aurora, Redshift, and DocumentDB. It rotates the actual database password on a configurable schedule and updates the secret value atomically.',C:'KMS manages encryption keys — it does not store, manage, or rotate application secrets like database passwords.',D:'ACM manages TLS/SSL certificates for load balancers and CloudFront — not database credentials.'},
+rule:'"Automatic rotation of database credentials" = AWS Secrets Manager. Parameter Store = config and static secrets without built-in rotation.'},
+
+{id:7,d:1,t:'mc',
+stem:'An application on EC2 instances in private subnets needs to call AWS KMS and AWS Secrets Manager endpoints without routing traffic through the public internet or a NAT Gateway. What is the correct solution?',
+opts:{A:'Create S3 Gateway VPC Endpoints for KMS and Secrets Manager.',B:'Create VPC Interface Endpoints (AWS PrivateLink) for KMS and Secrets Manager in the private subnets.',C:'Attach an Internet Gateway to the VPC and add routes to the private subnet route tables.',D:'Use AWS Direct Connect to route API traffic through the on-premises network.'},
+correct:['B'],
+exp:{A:'Gateway VPC Endpoints only support Amazon S3 and Amazon DynamoDB. KMS and Secrets Manager are not supported.',B:'VPC Interface Endpoints (PrivateLink) create an Elastic Network Interface with a private IP address in the subnet. Traffic to KMS and Secrets Manager routes privately over the AWS backbone without leaving the VPC or touching the internet.',C:'An Internet Gateway enables internet connectivity — it does not provide private access to AWS services.',D:'Direct Connect is for on-premises to AWS connectivity, not for private routing within the VPC to AWS service endpoints.'},
+rule:'Private access to AWS services from VPC: S3 and DynamoDB = Gateway Endpoint (free). All other AWS services (KMS, Secrets Manager, etc.) = Interface Endpoint / PrivateLink (charged).'},
+
+{id:8,d:1,t:'mc',
+stem:'A company wants to automatically discover which S3 buckets in their account contain personally identifiable information (PII) and receive findings with details about the sensitive data detected. Which AWS service provides this capability?',
+opts:{A:'Amazon GuardDuty',B:'AWS Config with a custom rule',C:'Amazon Inspector',D:'Amazon Macie'},
+correct:['D'],
+exp:{A:'GuardDuty analyses VPC Flow Logs, CloudTrail events, and DNS logs to detect threats like compromised credentials and crypto-mining activity. It does not scan S3 object content for PII.',B:'AWS Config tracks resource configuration state and evaluates compliance rules. It does not inspect the content of S3 objects.',C:'Inspector scans EC2 instances and container images for software vulnerabilities. It does not analyse S3 object content for sensitive data.',D:'Macie is a data security service that uses machine learning to automatically discover, classify, and protect sensitive data in Amazon S3 — including PII, financial data, and credentials. It generates detailed findings per bucket and object.'},
+rule:'"Discover PII / sensitive data in S3" = Amazon Macie. GuardDuty = threat detection. Inspector = vulnerability scanning. Config = configuration compliance.'},
+
+// ── DOMAIN 2: RESILIENT (8 questions) ───────────────────────────────────────
+{id:9,d:2,t:'mc',
+stem:'An order processing system must never lose a message even if the consumer service is temporarily unavailable, and every order must be processed exactly once in the order it was received. Which solution meets these requirements?',
+opts:{A:'Amazon SNS with the consumer service as a subscriber.',B:'Amazon SQS Standard queue with the consumer polling.',C:'Amazon SQS FIFO queue with content-based deduplication enabled.',D:'Amazon Kinesis Data Streams with a single shard.'},
+correct:['C'],
+exp:{A:'SNS is push-based — if the subscriber is unavailable at delivery time, the message is dropped. SNS does not buffer.',B:'SQS Standard provides at-least-once delivery (duplicates possible) and best-effort ordering. Order duplication could corrupt data.',C:'SQS FIFO guarantees exactly-once processing and strict first-in-first-out ordering. Messages are retained (up to 14 days) regardless of consumer availability.',D:'Kinesis Data Streams preserves order within a shard but does not natively prevent duplicate processing without consumer-side idempotency logic.'},
+rule:'"Exactly once + strict ordering + no message loss" = SQS FIFO with deduplication. Standard SQS = at-least-once. SNS = no buffer.'},
+
+{id:10,d:2,t:'mc',
+stem:'A company has a primary application in us-east-1. After a regional outage the previous year, the board mandated a second region must be available within 10 minutes of a failure, with no more than 1 minute of data loss. Which DR strategy and services should be used?',
+opts:{A:'Backup and Restore: hourly RDS snapshots copied to us-west-2, with Route 53 health-check failover.',B:'Pilot Light: keep only the RDS database running in us-west-2, restore other resources on failover via CloudFormation.',C:'Warm Standby: run a scaled-down active stack in us-west-2 with Aurora Global Database replication and Route 53 failover routing.',D:'Active-Active: run full capacity in both regions simultaneously with Route 53 weighted routing.'},
+correct:['C'],
+exp:{A:'Backup and Restore RTO is typically hours (restore snapshots, provision infrastructure) — cannot meet 10-minute RTO. RPO of up to 1 hour exceeds the 1-minute requirement.',B:'Pilot Light keeps the DB running but must provision the rest of the stack (EC2, load balancers, app) from scratch on failover — typically 20-45+ minutes. Borderline at best.',C:'Warm Standby runs a scaled-down but fully operational stack. Aurora Global Database replicates with sub-1-second lag (meets 1-minute RPO) and can be promoted in under 1 minute. Route 53 Failover routing redirects DNS. Total RTO well under 10 minutes.',D:'Active-Active easily meets the RTO/RPO but is the most expensive option. The question asks for the strategy that meets requirements — Warm Standby is sufficient and cheaper.'},
+rule:'RTO < 10 min + RPO < 1 min = Warm Standby with Aurora Global Database (< 1s replication lag, < 1 min promotion) + Route 53 Failover routing.'},
+
+{id:11,d:2,t:'mc',
+stem:'A Lambda function writes processed records to an Amazon RDS database. During peak load, the function fails with "too many database connections" errors. What is the most operationally efficient fix?',
+opts:{A:'Increase the RDS instance to a larger instance class to support more simultaneous connections.',B:'Add an ElastiCache Redis layer between the Lambda function and RDS.',C:'Deploy Amazon RDS Proxy between the Lambda function and the RDS database.',D:'Reduce the Lambda reserved concurrency setting to limit simultaneous invocations.'},
+correct:['C'],
+exp:{A:'A larger instance supports more connections but Lambda can scale to thousands of concurrent executions — the fundamental mismatch between ephemeral functions and persistent DB connections persists.',B:'ElastiCache is for caching read results — it does not manage or pool database write connections.',C:'RDS Proxy maintains a warm pool of database connections and multiplexes many Lambda invocations over a small number of persistent connections. Lambda functions connect to the proxy endpoint, not directly to RDS. This eliminates connection exhaustion without changing application code.',D:'Reducing Lambda concurrency caps throughput — it trades reliability for a workaround rather than fixing the architectural problem.'},
+rule:'"Lambda + RDS too many connections / connection exhaustion" = RDS Proxy. It pools connections so thousands of Lambda invocations share a small connection pool.'},
+
+{id:12,d:2,t:'mc',
+stem:'A company\'s RDS MySQL database in us-east-1 with Multi-AZ enabled is receiving heavy read traffic from a reporting application that is degrading performance for the primary transactional workload. What is the correct architectural fix?',
+opts:{A:'Use the Multi-AZ standby instance as the read endpoint for the reporting application.',B:'Enable automated backups — the backup window offloads reads to the standby.',C:'Create an RDS Read Replica and configure the reporting application to use the replica\'s endpoint.',D:'Enable ElastiCache write-through caching for the reporting queries.'},
+correct:['C'],
+exp:{A:'The Multi-AZ standby is not accessible for reads. It exists solely for automatic failover. This is the most common exam distractor on this topic.',B:'During automated backups, RDS Multi-AZ does perform the backup I/O on the standby — but the standby is still not queryable.',C:'An RDS Read Replica is an asynchronous copy of the primary, purpose-built for read offloading. The reporting application is directed to the replica endpoint, removing its load from the primary entirely.',D:'ElastiCache write-through caches writes as they happen — it is not designed for offloading arbitrary reporting queries.'},
+rule:'Multi-AZ standby = automatic failover ONLY, not readable. Read Replica = readable, for offloading reads. This distinction is tested constantly.'},
+
+{id:13,d:2,t:'mc',
+stem:'A new e-commerce platform needs to notify an inventory service, an email service, and an analytics service every time an order is placed. Each service must receive every event independently, and the failure of one must not impact the others. Which architecture achieves this?',
+opts:{A:'Write each order to an SQS Standard queue and have all three services poll the same queue.',B:'Call each service synchronously from a Lambda function triggered on order creation.',C:'Publish the order event to an SNS topic. Each of the three services subscribes via its own dedicated SQS queue.',D:'Write each order to a DynamoDB table and have each service poll for new records.'},
+correct:['C'],
+exp:{A:'A single SQS queue delivers each message to exactly one consumer — the three services would compete for messages and each order would only be processed by one service.',B:'Synchronous chained calls mean if any service is slow or fails the Lambda times out, blocking the entire flow. Tight coupling.',C:'SNS fan-out: one publish delivers a copy to every subscriber simultaneously. Each service has its own SQS queue for independent buffering. If one service\'s queue backs up or fails, the others are unaffected.',D:'Polling DynamoDB for new records is operationally complex, adds database read load, and creates tight coupling between services and the data store.'},
+rule:'One event → multiple independent consumers = SNS fan-out pattern. Each subscriber gets its own SQS queue. Failures are isolated per subscriber.'},
+
+{id:14,d:2,t:'mc',
+stem:'A company needs to coordinate a multi-step order fulfilment workflow: charge payment, reserve inventory, dispatch shipping, then send confirmation email. Some steps must be sequential; payment and inventory can run in parallel. Error handling and retries must be built in. Which service is the right choice?',
+opts:{A:'An Amazon SQS queue per step, chained with Lambda triggers.',B:'Amazon EventBridge with custom rules routing events between Lambda functions.',C:'AWS Step Functions Standard Workflow.',D:'An Amazon SNS topic with Lambda subscribers for each step.'},
+correct:['C'],
+exp:{A:'Chained SQS + Lambda queues require building all retry logic, state tracking, and sequencing in application code — significant operational complexity.',B:'EventBridge routes events by pattern — it does not track state, enforce ordering between steps, or provide built-in retry with backoff.',C:'Step Functions natively supports sequential states, parallel branches (Map and Parallel states), Catch/Retry blocks with configurable backoff, and full state visibility — all declared in the workflow definition without orchestration code.',D:'SNS delivers events to subscribers independently — it has no concept of sequential steps or shared workflow state.'},
+rule:'"Multi-step workflow, sequential + parallel, built-in retry, state visibility" = AWS Step Functions.'},
+
+{id:15,d:2,t:'mc',
+stem:'A stateless web application runs on EC2 in an Auto Scaling Group behind an ALB. Traffic is highly predictable: consistently high Monday–Friday 9 am–6 pm, near-zero overnight and weekends. Which scaling configuration minimises cost while maintaining performance?',
+opts:{A:'Simple scaling policy: add 2 instances when CPU > 70%, remove 2 when CPU < 30%.',B:'Target tracking policy set to 70% average CPU utilisation.',C:'Scheduled scaling to add capacity before 9 am each weekday and remove it after 6 pm, combined with target tracking to handle unexpected intra-day spikes.',D:'Manual scaling: an engineer adjusts desired capacity each morning and evening.'},
+correct:['C'],
+exp:{A:'Simple scaling is reactive — there is always a warm-up lag between load arriving and new instances being healthy. At 9 am the app is already under load before instances join.',B:'Target tracking is also reactive — it waits for load to materialise before scaling. The same warm-up lag problem applies at the start of business hours.',C:'Scheduled scaling proactively adds capacity before the load arrives, eliminating the morning lag. Target tracking handles unexpected anomalies during the day. Together they are optimal for predictable cyclical patterns.',D:'Manual scaling is error-prone and requires human action twice daily — operationally risky for a production workload.'},
+rule:'Predictable cyclical load pattern = Scheduled scaling (proactive) + Target Tracking (handles unexpected spikes). Scheduled alone cannot react to anomalies.'},
+
+{id:16,d:2,t:'mc',
+stem:'A microservices application on AWS has intermittent slow responses but engineers cannot tell which service in the call chain is the bottleneck. Which AWS service provides end-to-end request tracing across all services?',
+opts:{A:'Amazon CloudWatch Logs Insights',B:'AWS X-Ray',C:'Amazon GuardDuty',D:'AWS Config'},
+correct:['B'],
+exp:{A:'CloudWatch Logs Insights queries log data within individual services — it does not stitch together the full end-to-end journey of a request across multiple services.',B:'AWS X-Ray instruments applications to trace requests as they travel through services. It produces a service map showing each component, the latency contribution of each hop, and error rates — making bottlenecks immediately visible.',C:'GuardDuty is a security threat detection service — unrelated to application performance analysis.',D:'AWS Config tracks AWS resource configuration changes and evaluates compliance — not application-level request tracing.'},
+rule:'"Trace requests across microservices, identify latency bottleneck" = AWS X-Ray distributed tracing.'},
+
+// ── DOMAIN 3: HIGH-PERFORMING (7 questions) ──────────────────────────────────
+{id:17,d:3,t:'mc',
+stem:'A high-traffic e-commerce site queries the same product catalogue data from RDS thousands of times per minute. Database CPU is pinned at 90%. Most queries return identical results for popular items. What is the most effective architectural change to reduce database load?',
+opts:{A:'Upgrade the RDS instance to the next larger instance class.',B:'Enable RDS Multi-AZ to distribute read traffic to the standby.',C:'Add an Amazon ElastiCache Redis cluster and cache the results of frequently executed queries.',D:'Enable RDS Provisioned IOPS storage.'},
+correct:['C'],
+exp:{A:'A larger instance increases capacity but the database still executes every redundant query. It treats the symptom, not the cause.',B:'The Multi-AZ standby is not readable — it exists only for failover.',C:'ElastiCache Redis caches query results. When the same product is requested, ElastiCache returns the cached result in sub-millisecond time without touching the database. Only a cache miss triggers a DB query.',D:'Provisioned IOPS increases disk throughput — it does not reduce CPU load from repeated identical queries.'},
+rule:'"Read-heavy, same queries repeated constantly, reduce DB load" = ElastiCache in front of the DB. Cache hit = zero DB queries.'},
+
+{id:18,d:3,t:'mc',
+stem:'A company stores 1 PB of raw JSON log data in Amazon S3. Data analysts run ad-hoc SQL queries against subsets of this data. The team wants to minimise query costs without managing any database or cluster infrastructure. Which solution is most appropriate?',
+opts:{A:'Load the data into Amazon Redshift and run SQL queries there.',B:'Use Amazon Athena to query the S3 data directly, after converting the JSON files to Apache Parquet format using AWS Glue.',C:'Copy the data to an Amazon RDS PostgreSQL cluster and run queries.',D:'Deploy Amazon EMR and run Apache Hive queries against the S3 data.'},
+correct:['B'],
+exp:{A:'Redshift requires provisioning and managing a cluster that incurs ongoing hourly costs regardless of query frequency.',B:'Athena is serverless and charges per TB of data scanned. Parquet is columnar — Athena scans only the columns referenced in a query, typically reducing data scanned (and cost) by 3–5× compared to JSON. AWS Glue converts JSON to Parquet.',C:'Copying 1 PB to RDS is impractical — RDS maximum storage is 64 TB per instance for most engines.',D:'EMR requires provisioning and managing a cluster. More operationally complex than serverless Athena for ad-hoc queries.'},
+rule:'"Serverless SQL on S3, minimise query cost" = Athena. Convert JSON to Parquet with Glue to cut Athena query costs 3–5×.'},
+
+{id:19,d:3,t:'mc',
+stem:'A DynamoDB table serves millions of read requests per day. Popular items are read thousands of times per second. The team observes read latency consistently above 5 ms and wants to achieve sub-millisecond read latency with minimal code changes. Which solution meets this requirement?',
+opts:{A:'Enable DynamoDB auto scaling to provision more read capacity units.',B:'Enable DynamoDB Accelerator (DAX) and update the application to connect to the DAX cluster endpoint.',C:'Switch the table to DynamoDB On-Demand capacity mode.',D:'Add a Global Secondary Index on the most-queried attribute.'},
+correct:['B'],
+exp:{A:'Auto scaling adjusts provisioned throughput to prevent throttling — it does not reduce query latency.',B:'DAX is an in-memory write-through cache designed specifically for DynamoDB. It is API-compatible with DynamoDB so the only change needed is pointing the SDK to the DAX endpoint instead of the DynamoDB endpoint. DAX serves cache hits at microsecond latency.',C:'On-Demand capacity mode changes billing — it has no effect on query latency.',D:'A GSI creates an additional access pattern — it does not reduce latency for queries already supported by the existing key schema.'},
+rule:'"DynamoDB + sub-millisecond / microsecond reads" = DAX. API-compatible with DynamoDB; update only the endpoint in your code.'},
+
+{id:20,d:3,t:'mc',
+stem:'Multiple Linux EC2 instances distributed across three Availability Zones need concurrent read and write access to the same shared file system. The file system must scale automatically as data grows. Which storage service is correct?',
+opts:{A:'Amazon EBS gp3 volume with Multi-Attach enabled.',B:'Amazon S3 accessed via the S3 API from each instance.',C:'Amazon EFS (Elastic File System) with the default Regional configuration.',D:'Amazon FSx for Windows File Server.'},
+correct:['C'],
+exp:{A:'EBS Multi-Attach allows a single volume to attach to multiple EC2 instances, but only within a single Availability Zone, and only with io1/io2 volume types. It also requires the application to coordinate concurrent writes.',B:'S3 is object storage accessed via HTTP API — it cannot be mounted as a POSIX file system by default and requires application-level changes.',C:'EFS is a fully managed Network File System (NFS v4) that can be mounted simultaneously by any number of EC2 instances across all Availability Zones in a Region. Capacity scales automatically.',D:'FSx for Windows File Server uses the SMB protocol — only suitable for Windows-based workloads, not Linux NFS clients.'},
+rule:'"Shared POSIX filesystem, Linux EC2, multiple AZs, auto-scale" = Amazon EFS.'},
+
+{id:21,d:3,t:'mc',
+stem:'An application in a private VPC subnet calls Amazon S3 millions of times per day. The network administrator reports unexpectedly high NAT Gateway data-processing charges for this traffic. How should the architect eliminate these costs?',
+opts:{A:'Enable S3 Transfer Acceleration to route traffic through AWS edge locations.',B:'Create an Amazon S3 VPC Gateway Endpoint and add it to the private subnet route table.',C:'Create an Amazon S3 VPC Interface Endpoint (PrivateLink) in the private subnet.',D:'Establish an AWS Direct Connect connection to route all S3 traffic privately.'},
+correct:['B'],
+exp:{A:'S3 Transfer Acceleration is designed to accelerate large object uploads from the internet to S3 using CloudFront PoPs — it does not eliminate NAT Gateway costs.',B:'An S3 Gateway VPC Endpoint is free and routes traffic from the VPC directly to S3 over the AWS private network, bypassing the NAT Gateway entirely. No NAT data-processing fees are incurred.',C:'An S3 Interface Endpoint (PrivateLink) also provides private S3 access but incurs an hourly charge and a per-GB processing fee — more expensive than the free Gateway Endpoint for S3.',D:'Direct Connect is for hybrid on-premises to AWS connectivity — not for routing VPC-internal traffic to S3 services.'},
+rule:'"High NAT Gateway costs for S3 or DynamoDB traffic from private subnets" = FREE Gateway VPC Endpoint. Interface Endpoint = costs money; Gateway Endpoint = free.'},
+
+{id:22,d:3,t:'mc',
+stem:'A company is running a global application currently deployed only in ap-southeast-1. Users in Europe and North America experience high latency on dynamic (non-cacheable) API calls. The team wants to reduce latency without deploying the application to additional regions. Which service achieves this?',
+opts:{A:'Amazon CloudFront with the ALB as the origin.',B:'AWS Global Accelerator.',C:'Amazon Route 53 latency-based routing.',D:'Elastic Load Balancing cross-zone load balancing.'},
+correct:['B'],
+exp:{A:'CloudFront reduces latency for cacheable content served from edge locations. For dynamic non-cacheable API responses, the request still travels to the origin — latency improvement is minimal.',B:'Global Accelerator routes user traffic to the nearest AWS edge location and then uses the private AWS global network to reach the application in ap-southeast-1 — eliminating unpredictable public internet hops on the long-haul segment. No application changes required.',C:'Route 53 latency-based routing routes users to the closest region — but the application is only in one region, so routing cannot improve latency without a second deployment.',D:'Cross-zone load balancing distributes traffic across AZs within a region — it has no effect on inter-region or global latency.'},
+rule:'"Dynamic content, single-region app, reduce global latency, no re-architecture" = AWS Global Accelerator. CloudFront = cacheable content.'},
+
+{id:23,d:3,t:'mr',
+stem:'IoT sensors produce 80,000 records per second that must be processed in real-time (within 200 ms) by two independent analytics applications simultaneously. Which TWO services should the architect use for ingestion and processing? (Choose TWO)',
+opts:{A:'Amazon SQS FIFO queue',B:'Amazon Kinesis Data Streams',C:'Amazon Kinesis Data Firehose',D:'Amazon Kinesis Data Analytics for Apache Flink',E:'Amazon S3 with event notifications'},
+correct:['B','D'],
+exp:{A:'SQS FIFO supports 300 TPS (3,000 with batching) — far below 80,000 records/second. Also, each SQS message is consumed once so two independent applications would compete for the same messages.',B:'Kinesis Data Streams handles hundreds of thousands of records per second, preserves ordering within shards, retains data for replay (24 hours to 365 days), and allows multiple independent Enhanced Fan-Out consumer applications to read the same stream simultaneously.',C:'Kinesis Data Firehose buffers data for 60 seconds or more before delivering to a destination — it cannot meet the 200 ms real-time processing requirement.',D:'Kinesis Data Analytics for Apache Flink can read from Kinesis Data Streams and perform continuous real-time SQL or Flink stream processing with sub-second latency — satisfying the 200 ms requirement.',E:'S3 event notifications fire when objects are written to S3 — they are not designed for real-time streaming at 80,000 records/second.'},
+rule:'High-throughput real-time streaming + multiple independent consumers = Kinesis Data Streams (ingestion) + Kinesis Data Analytics / Flink (real-time processing).'},
+
+// ── DOMAIN 4: COST-OPTIMIZED (6 questions) ───────────────────────────────────
+{id:24,d:4,t:'mc',
+stem:'A company has run the same production workload on 30 EC2 On-Demand instances continuously for the past 12 months. A cost review reveals EC2 is the single largest expense. What is the highest-impact change to reduce this cost?',
+opts:{A:'Migrate the workload to AWS Lambda functions.',B:'Enable EC2 Auto Scaling to scale the fleet to zero overnight.',C:'Purchase 1-year Compute Savings Plans or Reserved Instances for the fleet.',D:'Enable T-series CPU credits unlimited mode on all instances.'},
+correct:['C'],
+exp:{A:'Migrating a production workload to Lambda is a significant re-architecture effort. The question asks for the single highest-impact cost change, not a redesign project.',B:'Scaling a steady-state production workload to zero at night would disrupt the application.',C:'A workload running 24/7 for 12 months is the ideal candidate for Reserved Instances (up to 60% savings) or Compute Savings Plans (up to 66% savings with more flexibility across instance families). This is the single highest-impact action with no code changes.',D:'T-series unlimited mode prevents CPU throttling but charges for burst credits used above baseline — this increases cost, not reduces it.'},
+rule:'"Steady-state 24/7 workload, reduce EC2 cost" = Reserved Instances or Compute Savings Plans. Up to 60–66% savings vs On-Demand. No application changes.'},
+
+{id:25,d:4,t:'mc',
+stem:'A data processing job runs for 5 hours every night. It is fault-tolerant and can checkpoint and restart from where it left off if interrupted. The job currently uses On-Demand EC2. What purchasing option would most reduce cost?',
+opts:{A:'Reserved Instances (1-year, all upfront).',B:'Spot Instances.',C:'Dedicated Hosts.',D:'On-Demand with Auto Scaling.'},
+correct:['B'],
+exp:{A:'Reserved Instances commit to paying for 24/7 capacity. The job only runs 5 hours/day — you would pay for 19 hours of idle capacity each day.',B:'Spot Instances offer up to 90% savings versus On-Demand. Because the job is fault-tolerant and can resume from checkpoints, a 2-minute interruption warning is manageable. This is the canonical Spot use case.',C:'Dedicated Hosts are the most expensive EC2 option — used for software license compliance (per-socket/per-core), not cost reduction.',D:'On-Demand with Auto Scaling provides elasticity but no pricing discount. Still paying full rate.'},
+rule:'"Fault-tolerant, can restart from checkpoint" = Spot Instances. Up to 90% off. Never use Spot for workloads that cannot tolerate 2-minute interruption.'},
+
+{id:26,d:4,t:'mc',
+stem:'A company stores 500 TB of video files in S3. Files are accessed frequently for the first 30 days after upload, then almost never accessed again. The company wants to minimise storage costs automatically without manual intervention. What should the architect configure?',
+opts:{A:'Manually run a script every 30 days to move files to S3 Glacier.',B:'Enable S3 Intelligent-Tiering on the bucket.',C:'Create an S3 Lifecycle Policy to transition objects to S3 Standard-IA at 30 days and to S3 Glacier Flexible Retrieval at 90 days.',D:'Enable S3 Requester Pays so that consumers pay for access costs.'},
+correct:['C'],
+exp:{A:'A manual script introduces operational risk — it requires maintenance, handles failures, and is not the purpose-built AWS solution.',B:'S3 Intelligent-Tiering is optimal when access patterns are unknown or unpredictable. It charges a per-object monitoring and automation fee. When the access pattern is well known (active for 30 days, then cold), a Lifecycle Policy is more cost-effective and has no monitoring fee.',C:'An S3 Lifecycle Policy automatically transitions objects based on age with no ongoing monitoring fee. After 30 days objects move to Standard-IA (cheaper, ms retrieval). After 90 days they move to Glacier Flexible Retrieval (cheapest, hour-range retrieval acceptable for cold archive).',D:'Requester Pays shifts the cost of data transfer to the requester. It does not reduce storage costs.'},
+rule:'"Known access pattern: active then cold" = S3 Lifecycle Policy. "Unknown / variable access pattern" = S3 Intelligent-Tiering.'},
+
+{id:27,d:4,t:'mc',
+stem:'A company\'s private subnet EC2 instances communicate with Amazon S3 and DynamoDB. The architecture currently uses a NAT Gateway for all outbound traffic, which has become a significant line item on the bill. What is the most cost-effective fix?',
+opts:{A:'Replace the NAT Gateway with a NAT instance (EC2) to reduce the hourly rate.',B:'Create Gateway VPC Endpoints for S3 and DynamoDB and update the route tables to route that traffic through the endpoints.',C:'Create Interface VPC Endpoints (PrivateLink) for S3 and DynamoDB.',D:'Move the EC2 instances to a public subnet and assign them Elastic IPs.'},
+correct:['B'],
+exp:{A:'NAT instances are cheaper per hour but require managing EC2, patching, and scaling. They do not eliminate per-GB NAT data-processing fees for S3 and DynamoDB traffic.',B:'Gateway VPC Endpoints for S3 and DynamoDB are completely free — no hourly charge and no data-processing fee. Traffic routes directly over the AWS private network, bypassing the NAT Gateway entirely.',C:'Interface VPC Endpoints (PrivateLink) charge an hourly rate and a per-GB processing fee. For S3 and DynamoDB, the free Gateway Endpoint is always preferable.',D:'Placing instances in a public subnet with Elastic IPs exposes them directly to the internet — a security anti-pattern.'},
+rule:'Eliminating NAT Gateway costs for S3 and DynamoDB = Gateway VPC Endpoints (100% free for both services). Interface Endpoints cost money; Gateway Endpoints do not.'},
+
+{id:28,d:4,t:'mc',
+stem:'A company wants a detailed, line-item breakdown of every AWS service charge — down to individual resource IDs, usage types, and custom cost allocation tags — to build a custom billing dashboard in Amazon QuickSight. Which AWS service provides the source data?',
+opts:{A:'AWS Cost Explorer via the API.',B:'AWS Budgets reports.',C:'AWS Cost and Usage Report (CUR) delivered to an S3 bucket.',D:'AWS Trusted Advisor cost optimisation checks.'},
+correct:['C'],
+exp:{A:'Cost Explorer provides summarised cost and usage data via the console and API. It supports service-, account-, and tag-level breakdowns but is not the granular line-item source needed for custom BI dashboards.',B:'AWS Budgets alerts on spend thresholds — it does not export detailed line-item billing data.',C:'The Cost and Usage Report is the most granular AWS billing dataset available. It produces a CSV/Parquet file with one row per resource per hour, including all resource IDs, usage types, operation, and custom cost allocation tags. Delivered to S3, it is queried with Athena and visualised in QuickSight.',D:'Trusted Advisor makes cost optimisation recommendations (idle resources, RI coverage) — it does not export raw billing data.'},
+rule:'"Line-item billing, resource IDs, custom tags, QuickSight dashboard" = Cost and Usage Report (CUR) → S3 → Athena → QuickSight.'},
+
+{id:29,d:4,t:'mr',
+stem:'A startup is building a new serverless web API with highly variable traffic — some periods see zero requests, some see thousands per second. The team wants zero idle costs and minimal operational overhead. Which TWO services form the most cost-effective compute and data stack? (Choose TWO)',
+opts:{A:'Amazon EC2 On-Demand instances with Auto Scaling (minimum 1)',B:'AWS Lambda',C:'Amazon RDS PostgreSQL Multi-AZ',D:'Amazon DynamoDB with On-Demand capacity mode',E:'Amazon Kinesis Data Streams (1 shard minimum)'},
+correct:['B','D'],
+exp:{A:'An ASG with a minimum of 1 incurs EC2 compute cost even when there are zero requests. Also requires patching and managing instances.',B:'Lambda charges per invocation and per 1-ms of execution time. At zero requests, the cost is exactly zero. It scales automatically from zero to thousands of concurrent executions with no configuration.',C:'RDS Multi-AZ charges per-hour for the running primary and standby instances regardless of query volume — costs money even when idle.',D:'DynamoDB On-Demand mode charges per read and write request. Zero requests = zero cost. No capacity planning or cluster management required.',E:'Kinesis Data Streams charges per shard-hour. A minimum of 1 shard must always be running — cost is incurred even when there is no data flowing.'},
+rule:'"Serverless, variable to zero traffic, zero idle cost" = AWS Lambda + DynamoDB On-Demand. Both cost exactly zero when there is no traffic.'},
+];
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let order = Q.map((_,i)=>i);
+const revealed = new Set();
+let currentFilter = 'all';
+let totalRevealed = 0, totalCorrect = 0;
+
+function updateScore() {
+  const vis = order.filter(i => currentFilter==='all' || Q[i].d.toString()===currentFilter);
+  document.getElementById('scoreNum').textContent = `${totalCorrect}/${totalRevealed}`;
+  const pct = vis.length ? totalRevealed/vis.length*100 : 0;
+  document.getElementById('pbar').style.width = pct+'%';
+}
+
+// ─── Build ────────────────────────────────────────────────────────────────────
+const dName = {1:'Secure',2:'Resilient',3:'High-Performing',4:'Cost-Optimized'};
+
+function build() {
+  const grid = document.getElementById('grid');
+  grid.querySelectorAll('.qcard').forEach(c=>c.remove());
+
+  order.forEach((qi,pos) => {
+    const q = Q[qi];
+    const isMR = q.t==='mr';
+
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    card.id = `c${qi}`;
+    card.dataset.d = q.d;
+
+    // Head
+    const head = document.createElement('div');
+    head.className = 'qhead';
+    head.onclick = () => card.classList.toggle('open');
+    head.innerHTML = `
+      <div class="qindex">Q${pos+1}</div>
+      <div class="qhead-right">
+        <div class="badges">
+          <span class="badge badge-d${q.d}">Domain ${q.d} &middot; ${dName[q.d]}</span>
+          <span class="badge badge-${isMR?'mr':'mc'}">${isMR?'Multiple Response':'Multiple Choice'}</span>
+        </div>
+        <div class="qstem">${q.stem}</div>
+      </div>
+      <div class="qarrow">&#8964;</div>`;
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'qbody';
+
+    // Options
+    const optsEl = document.createElement('div');
+    optsEl.className = 'opts';
+    optsEl.id = `opts${qi}`;
+    Object.entries(q.opts).forEach(([ltr, txt]) => {
+      const opt = document.createElement('div');
+      opt.className = 'opt';
+      opt.id = `o${qi}${ltr}`;
+      opt.innerHTML = `<div class="opt-letter">${ltr}</div><div class="opt-text">${txt}</div>`;
+      opt.onclick = () => {
+        if (revealed.has(qi)) return;
+        if (!isMR) optsEl.querySelectorAll('.opt').forEach(o=>o.classList.remove('sel'));
+        opt.classList.toggle('sel');
+      };
+      optsEl.appendChild(opt);
+    });
+
+    // Show btn
+    const sw = document.createElement('div');
+    sw.className = 'show-wrap';
+    const sb = document.createElement('button');
+    sb.className = 'show-btn';
+    sb.id = `sb${qi}`;
+    sb.textContent = isMR ? 'Show Answer — Choose TWO' : 'Show Answer';
+    sb.onclick = () => doReveal(qi, q, card, optsEl, sb);
+    sw.appendChild(sb);
+
+    // Explanation
+    const expWrap = document.createElement('div');
+    expWrap.className = 'expwrap';
+    let html = '<div class="exp-rule-line">Explanation</div><div class="exp-opts">';
+    Object.entries(q.exp).forEach(([ltr,txt])=>{
+      const ok = q.correct.includes(ltr);
+      html += `<div class="exp-row ${ok?'ok':'bad'}"><div class="exp-ltr">${ltr}</div><div class="exp-body"><strong>${ok?'✓ Correct':'✗ Wrong'}</strong> — ${txt}</div></div>`;
+    });
+    html += `</div>`;
+    if (q.rule) html += `<div class="key-rule">${q.rule}</div>`;
+    expWrap.innerHTML = html;
+
+    body.appendChild(optsEl);
+    body.appendChild(sw);
+    body.appendChild(expWrap);
+    card.appendChild(head);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+
+  applyFilter(currentFilter);
+}
+
+function doReveal(qi, q, card, optsEl, sb) {
+  if (revealed.has(qi)) return;
+  revealed.add(qi);
+  totalRevealed++;
+
+  const selected = [...optsEl.querySelectorAll('.sel')].map(o=>o.querySelector('.opt-letter').textContent);
+  const correctSet = new Set(q.correct);
+  const isOk = selected.length===correctSet.size && selected.every(l=>correctSet.has(l));
+  if (isOk) { totalCorrect++; card.classList.add('correct'); }
+  else { card.classList.add('wrong'); }
+
+  optsEl.querySelectorAll('.opt').forEach(o=>{
+    const ltr = o.querySelector('.opt-letter').textContent;
+    o.classList.remove('sel');
+    o.classList.add(q.correct.includes(ltr)?'rev-ok':'rev-bad');
+    o.onclick = null; o.style.cursor='default';
+  });
+
+  card.classList.add('open','revealed');
+  sb.classList.add('done');
+  sb.textContent = 'Answer revealed';
+  updateScore();
+}
+
+function filt(domain, btn) {
+  currentFilter = domain;
+  document.querySelectorAll('.tag-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  applyFilter(domain);
+}
+
+function applyFilter(domain) {
+  totalRevealed = 0; totalCorrect = 0;
+  let vis = 0;
+  document.querySelectorAll('.qcard').forEach(card => {
+    const qi = parseInt(card.id.slice(1));
+    const show = domain==='all' || card.dataset.d===domain;
+    card.classList.toggle('hidden', !show);
+    if (show) {
+      vis++;
+      if (revealed.has(qi)) { totalRevealed++; if(card.classList.contains('correct')) totalCorrect++; }
+    }
+  });
+  updateScore();
+}
+
+function resetAll() {
+  if (!confirm('Clear all answers and progress?')) return;
+  revealed.clear(); totalRevealed=0; totalCorrect=0;
+  build(); updateScore();
+}
+
+function revealAll() {
+  order.forEach(qi=>{
+    const card=document.getElementById(`c${qi}`);
+    if (!card.classList.contains('hidden') && !revealed.has(qi)) {
+      const q=Q[qi];
+      const optsEl=document.getElementById(`opts${qi}`);
+      const sb=document.getElementById(`sb${qi}`);
+      card.classList.add('open');
+      doReveal(qi,q,card,optsEl,sb);
+    }
+  });
+}
+
+function doShuffle() {
+  for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+  revealed.clear(); totalRevealed=0; totalCorrect=0;
+  build(); updateScore();
+}
+
+window.addEventListener('scroll',()=>{
+  document.getElementById('top-btn').classList.toggle('vis', window.scrollY>300);
+});
+
+build();
+updateScore();
+</script>
+</body>
+</html>

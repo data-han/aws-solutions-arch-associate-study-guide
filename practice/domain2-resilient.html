@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Domain 2 — Design Resilient Architectures</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; padding: 2rem 1rem; }
+    .container { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; font-weight: 600; color: #f8fafc; margin-bottom: 0.25rem; }
+    .subtitle { font-size: 0.85rem; color: #64748b; margin-bottom: 2rem; }
+    .scoreboard { background: #1e2433; border: 1px solid #2d3748; border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 2rem; display: flex; gap: 2rem; align-items: center; }
+    .score-label { font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem; }
+    .score-value { font-size: 1.5rem; font-weight: 700; color: #f8fafc; }
+    .score-value span { font-size: 0.9rem; color: #64748b; font-weight: 400; }
+    .reset-btn { margin-left: auto; background: #1e2433; border: 1px solid #374151; color: #94a3b8; padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: border-color 0.15s, color 0.15s; }
+    .reset-btn:hover { border-color: #6366f1; color: #e2e8f0; }
+    .question-card { background: #1e2433; border: 1px solid #2d3748; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; transition: border-color 0.2s; }
+    .question-card.answered { border-color: #374151; }
+    .question-header { display: flex; gap: 0.75rem; align-items: flex-start; margin-bottom: 1.1rem; }
+    .q-number { background: #2d3748; color: #94a3b8; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.55rem; border-radius: 5px; flex-shrink: 0; margin-top: 2px; }
+    .q-text { font-size: 0.95rem; line-height: 1.55; color: #e2e8f0; }
+    .options { display: flex; flex-direction: column; gap: 0.5rem; }
+    .option { display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.65rem 0.9rem; border: 1px solid #2d3748; border-radius: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+    .option:hover:not(.disabled) { border-color: #6366f1; background: #252d3f; }
+    .option.selected { border-color: #6366f1; background: #252d3f; }
+    .option.disabled { cursor: default; }
+    .option.correct { border-color: #22c55e; background: #052e16; }
+    .option.wrong { border-color: #ef4444; background: #2d0a0a; }
+    .option.missed { border-color: #f59e0b; background: #1c1500; }
+    .option.neutral { border-color: #2d3748; }
+    .option-letter { font-size: 0.8rem; font-weight: 700; color: #64748b; flex-shrink: 0; margin-top: 1px; width: 1rem; text-align: center; }
+    .option.correct .option-letter { color: #22c55e; }
+    .option.wrong .option-letter { color: #ef4444; }
+    .option.missed .option-letter { color: #f59e0b; }
+    .option.selected .option-letter { color: #818cf8; }
+    .option-body { flex: 1; }
+    .option-text { font-size: 0.9rem; color: #cbd5e1; line-height: 1.45; }
+    .option-explanation { display: none; font-size: 0.82rem; color: #94a3b8; margin-top: 0.4rem; line-height: 1.5; }
+    .option.correct .option-explanation, .option.wrong .option-explanation, .option.missed .option-explanation, .option.neutral .option-explanation { display: block; }
+    .option.correct .option-explanation { color: #86efac; }
+    .option.wrong .option-explanation { color: #fca5a5; }
+    .option.missed .option-explanation { color: #fcd34d; }
+    .option.neutral .option-explanation { color: #64748b; }
+    .option-icon { flex-shrink: 0; font-size: 0.85rem; margin-top: 2px; display: none; }
+    .option.correct .option-icon::after { content: "✓"; color: #22c55e; display: block; }
+    .option.wrong .option-icon::after { content: "✗"; color: #ef4444; display: block; }
+    .option.missed .option-icon::after { content: "✓"; color: #f59e0b; display: block; }
+    .option.correct .option-icon, .option.wrong .option-icon, .option.missed .option-icon { display: block; }
+    .reveal-btn { margin-top: 1rem; background: #6366f1; color: #fff; border: none; padding: 0.5rem 1.2rem; border-radius: 7px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: background 0.15s, opacity 0.15s; }
+    .reveal-btn:hover { background: #4f46e5; }
+    .reveal-btn:disabled { opacity: 0.4; cursor: default; }
+    .result-badge { display: none; margin-left: 0.75rem; font-size: 0.78rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 20px; }
+    .result-badge.correct-badge { background: #052e16; color: #22c55e; border: 1px solid #166534; }
+    .result-badge.wrong-badge { background: #2d0a0a; color: #ef4444; border: 1px solid #991b1b; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>Domain 2 — Design Resilient Architectures</h1>
+  <p class="subtitle">Select an answer, then click Reveal to see the explanation.</p>
+  <div class="scoreboard">
+    <div><div class="score-label">Score</div><div class="score-value" id="score-display">0 <span>/ 0</span></div></div>
+    <div><div class="score-label">Answered</div><div class="score-value" id="answered-display">0 <span>/ 10</span></div></div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+  </div>
+  <div id="quiz"></div>
+</div>
+<script>
+const questions = [
+  {
+    q: "A web tier on EC2 behind an ALB must survive the failure of an entire Availability Zone with no manual intervention. What design achieves this most simply?",
+    correct: "B",
+    options: {
+      A: { text: "Run two instances in one AZ with a standby", explanation: "Single-AZ designs can't survive an AZ failure — both instances go down together, standby included." },
+      B: { text: "Use an Auto Scaling group spanning multiple AZs behind the ALB", explanation: "Correct. ASG across multiple AZs lets the ALB automatically route to healthy AZs — self-healing, no manual action needed." },
+      C: { text: "Use a larger instance type", explanation: "A bigger instance doesn't address AZ failure — the entire AZ goes down regardless of instance size." },
+      D: { text: "Add a Route 53 failover record to a second Region", explanation: "Cross-Region failover is more complex and costly than needed for AZ-level resilience. ASG across AZs is simpler and sufficient." }
+    }
+  },
+  {
+    q: "An order-processing system loses messages when the processing fleet is overwhelmed during sales spikes. How should you decouple it?",
+    correct: "B",
+    options: {
+      A: { text: "Increase EC2 instance size", explanation: "Bigger instances may delay the problem but won't prevent message loss once they're overwhelmed — there's no durable buffer." },
+      B: { text: "Place an SQS queue between the front end and the processing fleet, scaling consumers on queue depth", explanation: "Correct. SQS durably buffers messages through spikes; consumers scale on depth so no orders are lost even if the fleet falls behind." },
+      C: { text: "Use SNS to push orders directly to instances", explanation: "SNS is push-only with no durable buffer — if instances are overwhelmed or unavailable, messages are dropped." },
+      D: { text: "Add a read replica to the database", explanation: "A read replica offloads read queries but does nothing to buffer inbound order messages or protect the processing tier from being overwhelmed." }
+    }
+  },
+  {
+    q: "A company wants the cheapest disaster recovery option and can tolerate several hours of recovery time (RTO) and data loss (RPO). Which strategy?",
+    correct: "D",
+    options: {
+      A: { text: "Multi-site active/active", explanation: "Active/active is the most expensive DR strategy — full production running in two Regions simultaneously. Far more than needed for hours-scale RTO/RPO." },
+      B: { text: "Warm standby", explanation: "Warm standby keeps a scaled-down but functional copy running — cheaper than active/active but still incurs ongoing compute cost." },
+      C: { text: "Pilot light", explanation: "Pilot light keeps only the core database running; the rest is spun up on demand. Cheaper than warm standby but still more expensive than backup/restore." },
+      D: { text: "Backup and restore", explanation: "Correct. Backup and restore is cheapest — pay only for stored backups. Hours-scale RTO/RPO makes this viable when the business can tolerate the recovery time." }
+    }
+  },
+  {
+    q: "An RDS MySQL database must automatically fail over to a standby with no data loss if its AZ goes down. What should be configured?",
+    correct: "B",
+    options: {
+      A: { text: "A cross-Region read replica", explanation: "Read replicas use asynchronous replication — potential data loss — and don't auto-failover for write traffic." },
+      B: { text: "Multi-AZ deployment", explanation: "Correct. Multi-AZ keeps a synchronous standby in another AZ. Automatic failover with no data loss when the primary AZ fails." },
+      C: { text: "Multiple read replicas in the same AZ", explanation: "Read replicas are async and can't serve writes. Same-AZ placement means they go down with the AZ anyway." },
+      D: { text: "Automated snapshots every hour", explanation: "Snapshots are point-in-time restores — recovery takes time and involves data loss up to the last snapshot. No automatic failover." }
+    }
+  },
+  {
+    q: "Messages that repeatedly fail processing must be retained for later debugging instead of being lost. What should you configure?",
+    correct: "C",
+    options: {
+      A: { text: "Increase visibility timeout", explanation: "Longer visibility timeout delays reprocessing but the message still keeps being retried indefinitely — it's never captured for debugging." },
+      B: { text: "Enable long polling", explanation: "Long polling reduces empty receive calls for efficiency — it doesn't handle failed messages or prevent their loss." },
+      C: { text: "A dead-letter queue (DLQ)", explanation: "Correct. A DLQ captures messages that exceed the maxReceiveCount — failed messages are moved aside for debugging without being dropped." },
+      D: { text: "FIFO queue", explanation: "FIFO enforces ordering and exactly-once processing. It doesn't automatically capture repeatedly failing messages for debugging." }
+    }
+  },
+  {
+    q: "A globally used application needs a relational database with cross-Region disaster recovery and sub-second replication lag. Which option?",
+    correct: "B",
+    options: {
+      A: { text: "RDS Multi-AZ", explanation: "Multi-AZ is single-Region HA — the standby is in another AZ in the same Region, not another Region." },
+      B: { text: "Aurora Global Database", explanation: "Correct. Aurora Global Database = relational, cross-Region, <1s replication lag, and can promote the secondary Region in under a minute." },
+      C: { text: "DynamoDB Global Tables", explanation: "Global Tables is active-active cross-Region but it's NoSQL — doesn't fit a relational database requirement." },
+      D: { text: "Read replica in the same Region", explanation: "Same-Region read replica provides no cross-Region DR and is async with potential data loss." }
+    }
+  },
+  {
+    q: "A stateless application stores user session data on each EC2 instance's local disk, so users get logged out when Auto Scaling replaces an instance. How do you fix this resiliently?",
+    correct: "B",
+    options: {
+      A: { text: "Disable Auto Scaling", explanation: "Disabling ASG removes the self-healing and scaling benefit entirely — not a fix for a resilience problem." },
+      B: { text: "Store session state in ElastiCache (Redis) or DynamoDB", explanation: "Correct. External session stores survive instance replacement — any instance can serve any user's session." },
+      C: { text: "Enable sticky sessions only", explanation: "Sticky sessions keep users on one instance, but if that instance is terminated during scale-in, the session is still lost." },
+      D: { text: "Use a larger instance", explanation: "Instance size doesn't fix session loss — when the instance is replaced, local disk data disappears regardless of size." }
+    }
+  },
+  {
+    q: "A company needs centralized, policy-driven backups across EBS, RDS, DynamoDB, and EFS with cross-Region copies. Which service?",
+    correct: "B",
+    options: {
+      A: { text: "S3 lifecycle policies", explanation: "S3 lifecycle policies only manage S3 objects — they can't back up EBS, RDS, or DynamoDB." },
+      B: { text: "AWS Backup", explanation: "Correct. AWS Backup provides centralized, policy-based backup management across all the listed services with cross-Region copy support." },
+      C: { text: "Manual snapshots", explanation: "Manual snapshots require individual effort per service with no centralized policy — error-prone and operationally heavy." },
+      D: { text: "Storage Gateway", explanation: "Storage Gateway is a hybrid storage service for connecting on-premises environments to AWS — not a cross-service backup management tool." }
+    }
+  },
+  {
+    q: "To protect against accidental and malicious deletion of critical objects in S3, which combination is best?",
+    correct: "B",
+    options: {
+      A: { text: "One Zone-IA storage class", explanation: "One Zone-IA is a storage cost tier — it does nothing to prevent deletion and stores data in a single AZ." },
+      B: { text: "Versioning plus MFA Delete (and optionally Object Lock)", explanation: "Correct. Versioning keeps deleted objects recoverable; MFA Delete requires a second factor to permanently delete versions, preventing accidental or malicious removal." },
+      C: { text: "Cross-Region replication only", explanation: "CRR replicates deletes too (by default) — a malicious delete propagates to the replica. Versioning must be enabled first to protect against this." },
+      D: { text: "Bucket ACLs", explanation: "ACLs are legacy access control — they don't prevent authorized users (or compromised credentials) from deleting objects." }
+    }
+  },
+  {
+    q: "An application must route users to a secondary Region automatically if the primary Region's endpoint becomes unhealthy. Which Route 53 routing policy?",
+    correct: "C",
+    options: {
+      A: { text: "Weighted", explanation: "Weighted routing splits traffic by percentage across endpoints — it doesn't switch based on health checks." },
+      B: { text: "Latency", explanation: "Latency-based routing sends users to the lowest-latency Region — not an active-passive failover based on health." },
+      C: { text: "Failover", explanation: "Correct. Failover routing is active-passive — it routes to the secondary only when the primary health check fails." },
+      D: { text: "Geolocation", explanation: "Geolocation routes users based on their geographic location — not based on endpoint health." }
+    }
+  }
+];
+
+let selected = new Array(questions.length).fill(null);
+let revealed = new Array(questions.length).fill(false);
+
+function updateScore() {
+  const answeredCount = revealed.filter(Boolean).length;
+  const correctCount = revealed.filter((r, i) => r && selected[i] === questions[i].correct).length;
+  document.getElementById('score-display').innerHTML = `${correctCount} <span>/ ${answeredCount}</span>`;
+  document.getElementById('answered-display').innerHTML = `${answeredCount} <span>/ ${questions.length}</span>`;
+}
+
+function selectOption(qIndex, letter) {
+  if (revealed[qIndex]) return;
+  selected[qIndex] = letter;
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  card.querySelector(`[data-opt="${letter}"]`).classList.add('selected');
+  card.querySelector('.reveal-btn').disabled = false;
+}
+
+function reveal(qIndex) {
+  if (revealed[qIndex]) return;
+  revealed[qIndex] = true;
+  const q = questions[qIndex];
+  const card = document.querySelector(`[data-q="${qIndex}"]`);
+  card.classList.add('answered');
+  card.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    const letter = opt.dataset.opt;
+    opt.classList.remove('selected');
+    if (letter === q.correct && letter === selected[qIndex]) opt.classList.add('correct');
+    else if (letter === q.correct) opt.classList.add('missed');
+    else if (letter === selected[qIndex]) opt.classList.add('wrong');
+    else opt.classList.add('neutral');
+  });
+  const btn = card.querySelector('.reveal-btn');
+  btn.disabled = true; btn.textContent = 'Revealed';
+  const badge = card.querySelector('.result-badge');
+  badge.style.display = 'inline-block';
+  if (selected[qIndex] === q.correct) { badge.className = 'result-badge correct-badge'; badge.textContent = 'Correct'; }
+  else { badge.className = 'result-badge wrong-badge'; badge.textContent = selected[qIndex] ? `Wrong — ${q.correct} is correct` : `No answer — ${q.correct} is correct`; }
+  updateScore();
+}
+
+function resetAll() {
+  selected = new Array(questions.length).fill(null);
+  revealed = new Array(questions.length).fill(false);
+  render(); updateScore();
+}
+
+function render() {
+  document.getElementById('quiz').innerHTML = questions.map((q, i) => `
+    <div class="question-card" data-q="${i}">
+      <div class="question-header"><span class="q-number">Q${i+1}</span><span class="q-text">${q.q}</span></div>
+      <div class="options">${Object.entries(q.options).map(([letter, opt]) => `
+        <div class="option" data-opt="${letter}" onclick="selectOption(${i},'${letter}')">
+          <div class="option-letter">${letter}</div>
+          <div class="option-body"><div class="option-text">${opt.text}</div><div class="option-explanation">${opt.explanation}</div></div>
+          <div class="option-icon"></div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;margin-top:1rem;">
+        <button class="reveal-btn" onclick="reveal(${i})" disabled>Reveal Answer</button>
+        <span class="result-badge"></span>
+      </div>
+    </div>`).join('');
+}
+
+render(); updateScore();
+</script>
+</body>
+</html>
