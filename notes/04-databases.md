@@ -17,6 +17,27 @@ The exam frequently gives you a scenario and asks which database service fits. S
 | Immutable ledger / financial audit trail | **QLDB** |
 | Wide-column (Cassandra-compatible) | **Keyspaces** |
 
+### Why you can't just use Redis for everything
+
+Redis is fast and flexible, but it has hard limits that make it the wrong tool outside its lane:
+
+| Constraint | Why it matters |
+|---|---|
+| **Memory-only (expensive)** | RAM costs ~10–50× more per GB than SSD. Storing TBs of data in Redis is prohibitively expensive. Aurora/DynamoDB store on disk cheaply. |
+| **No real querying** | Redis has no SQL, no joins, no filtering. "All orders from users in Singapore over $500" requires pulling data out and filtering in app code. One SQL query handles this in Aurora. |
+| **Primitive data model** | No tables, no relationships, no schema. Complex relational data (users → orders → products) is unnatural and hard to maintain in Redis. |
+| **Not fully ACID** | Redis persistence is best-effort. Under a crash, you can lose the last second of writes. Financial transactions need Aurora/RDS with true ACID guarantees. |
+| **RAM scale ceiling** | Each Redis shard is bounded by the RAM of that node. DynamoDB is disk-backed and scales to virtually unlimited size. |
+
+**Use Redis when:** speed is the primary constraint, the data fits in memory, and you don't need SQL or relational structure.
+
+| Need | Right tool |
+|---|---|
+| Complex queries, joins, ACID transactions | **Aurora / RDS** |
+| Massive scale, flexible NoSQL, single-digit ms | **DynamoDB** |
+| Sub-millisecond, sessions, leaderboards, counters | **ElastiCache Redis** |
+| Analytical queries across huge datasets | **Redshift / Athena** |
+
 ---
 
 ## RDS (managed relational databases)
@@ -85,15 +106,48 @@ DynamoDB is a fully managed, serverless NoSQL database that delivers **single-di
 
 ElastiCache provides managed in-memory data stores for caching. The primary use case is reducing latency and load on your primary database by caching frequently read results in memory — instead of hitting the database every time, your application checks the cache first.
 
-| Engine | Best for |
-|--------|----------|
-| **Redis** | Workloads needing persistence, replication, Multi-AZ failover, pub/sub messaging, complex data structures like sorted sets and leaderboards |
-| **Memcached** | Simple, high-throughput caching with multi-threading; no persistence, no replication — just fast, horizontal caching |
+**Redis is not just a cache.** This is a common misconception. Redis is a full in-memory data structure store — it can act as a cache, a session store, a message broker, a real-time leaderboard, and a pub/sub system. The data lives in memory (so reads are sub-millisecond), but Redis can also persist data to disk, which means it survives restarts and is not purely ephemeral like Memcached.
 
-Common use cases beyond database read caching include **session store** (storing web session data in the cache so any server in a fleet can serve any user's request — keeping your application tier stateless) and **rate limiting** (tracking request counts against a limit very quickly).
+### Redis vs Memcached
+
+| Feature | Redis | Memcached |
+|---|---|---|
+| Data structures | Rich — strings, lists, sets, **sorted sets**, hashes, bitmaps | Simple key-value only |
+| Persistence | Yes — can snapshot to disk (RDB) or write an append-only log (AOF) | No — data lost on restart |
+| Replication | Yes — primary + read replicas | No |
+| Multi-AZ failover | Yes — automatic | No |
+| Pub/sub messaging | Yes | No |
+| Multi-threading | Single-threaded per shard | Multi-threaded |
+| Use case | Sessions, leaderboards, pub/sub, complex caching, queues | Pure horizontal read caching, simplest setup |
+
+**Sorted sets explained simply** — every member has a numeric score, and Redis keeps the entire collection ranked by score automatically. One command gives you the top-N players, one command gives you a specific player's rank. This is why Redis is the answer for leaderboards — no other AWS service has this built in.
+
+**When Redis is used as a primary data store (not just a cache):**
+- Leaderboards — sorted sets hold the live ranking
+- Session state — the session data lives in Redis, not a relational DB
+- Rate limiting — Redis atomically increments a counter per user per second
+- Pub/sub — producers push messages, consumers subscribe
+
+In all these cases Redis is the *source of truth* for that data, not just a copy of something in a database behind it.
+
+### Common use cases
+
+- **Database read caching** — cache query results so the DB gets fewer hits
+- **Session store** — any server in an ASG can read any user's session from Redis
+- **Leaderboard** — sorted sets give real-time ranking at sub-millisecond speed
+- **Rate limiting** — atomic counters track request rates per user
+
+| Scenario | Answer |
+|---|---|
+| Leaderboard / real-time ranking / sorted set | **ElastiCache Redis** |
+| Session store for stateless fleet | **ElastiCache Redis** or DynamoDB |
+| Simple, pure read cache, no persistence needed | **Memcached** |
+| Sub-millisecond DynamoDB reads specifically | **DAX** (not ElastiCache) |
 
 - Keyword "reduce read load on a database / cache query results" → **ElastiCache**.
 - Keyword "session state for a stateless application fleet" → **ElastiCache (Redis)** or **DynamoDB**.
+- Keyword "leaderboard / sorted / real-time ranking / sub-millisecond" → **ElastiCache Redis**.
+- Keyword "pub/sub messaging in-memory" → **ElastiCache Redis**.
 
 ---
 

@@ -83,7 +83,24 @@ EBS provides persistent block storage volumes for EC2 instances — think of the
 | **st1** | Throughput-optimized HDD — large sequential reads/writes like log processing, data warehouse, or big data. High throughput, lower IOPS |
 | **sc1** | Cold HDD — the cheapest EBS option; for data that is infrequently accessed and where lowest cost matters more than performance |
 
-**Multi-Attach** (io1/io2 only) allows a single EBS volume to be attached to multiple EC2 instances simultaneously, but only within the same AZ. Used for clustered applications that coordinate access themselves.
+**EBS Multi-Attach** (io1/io2 only) allows a single EBS volume to be attached to up to 16 EC2 instances simultaneously — but with hard constraints you must know:
+- **Same AZ only** — the volume and all attached instances must be in the same Availability Zone.
+- **io1 or io2 only** — gp2/gp3 and HDD types do not support Multi-Attach.
+- **Application must manage concurrency** — AWS does not coordinate concurrent writes. The application (typically a clustered DB or HA software) must use a cluster-aware file system and handle locking itself. A standard Linux ext4/xfs file system will corrupt data if two instances write simultaneously.
+
+Multi-Attach is **not** a solution for sharing session state or general-purpose shared storage across a fleet — use EFS (NFS) for that. Multi-Attach is specifically for tightly-coupled cluster applications (e.g. Oracle RAC) that are designed for it.
+
+| | EFS | EBS Multi-Attach |
+|---|---|---|
+| Protocol | NFS (file system) | Block storage |
+| Concurrent instances | Unlimited | Max 16 |
+| Cross-AZ | Yes (multi-AZ by default) | No — same AZ only |
+| App changes needed | Mount like a normal file system | Must use cluster-aware file system |
+| Session state / shared files | Yes | No |
+| Use case | Web content, shared files, sessions | Clustered DBs (Oracle RAC), HA software |
+
+- Keyword "shared session state / shared file storage across fleet" → **EFS**, not EBS Multi-Attach.
+- Keyword "clustered application, same AZ, cluster-aware file system, guaranteed IOPS" → **EBS Multi-Attach (io2)**.
 
 EBS encryption uses KMS to encrypt data at rest on the volume, all data in transit between the volume and the instance, and all snapshots — and any volumes restored from those snapshots are also encrypted.
 
