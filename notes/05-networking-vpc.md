@@ -56,8 +56,31 @@ That creates a problem: how do you let IPv6 instances make **outbound** connecti
 | **VPC Peering** | Creates a direct private network connection between two VPCs (in the same or different accounts/regions). Traffic stays on the AWS network. Peering is **non-transitive** — if A is peered with B and B is peered with C, A cannot reach C through B. No overlapping CIDR blocks allowed. Best for a small number of VPCs. |
 | **Transit Gateway** | A regional hub that all your VPCs and on-premises networks connect to, creating a hub-and-spoke topology. Traffic between any two connected networks flows through the Transit Gateway. It's **transitive** — connecting to the hub gives you access to all other spokes. Use this when you need to connect many VPCs or build a scalable hybrid network. |
 | **Site-to-Site VPN** | Creates an encrypted IPSec tunnel over the public internet between your on-premises network and your VPC. Quick to set up (minutes to hours), lower cost, but latency varies because it uses the public internet. Good for quick connectivity or as a backup link. |
+| **Client VPN** | Lets individual remote users (laptops, phones) connect to a VPC over an encrypted OpenVPN tunnel. Each person installs a VPN client and authenticates — then their device gets a private IP and can reach resources inside the VPC as if they were on the corporate network. |
 | **Direct Connect (DX)** | A dedicated private physical fiber connection from your data center to AWS, bypassing the public internet entirely. Provides consistent, low-latency, high-bandwidth connectivity. Takes weeks to provision. Does not encrypt traffic by default — combine with a VPN over DX if encryption is required. |
 | **DX + VPN** | Run a VPN tunnel over your Direct Connect line to get both the consistent performance of a dedicated connection and the encryption of a VPN. |
+
+### Site-to-Site VPN vs Client VPN
+
+These are commonly confused — the difference is **what is connecting to AWS**:
+
+| | Site-to-Site VPN | Client VPN |
+|---|---|---|
+| Who connects | An entire **network** (office, data center) | Individual **users/devices** (laptops, phones) |
+| Both ends | On-premises router ↔ AWS Virtual Private Gateway | User's VPN client app ↔ AWS Client VPN endpoint |
+| Protocol | IPSec | OpenVPN (TLS) |
+| Use case | Permanent network-to-network tunnel (hybrid cloud) | Remote workers, developers needing VPC access |
+| Setup | Configure on your router/firewall | Users install a VPN client app |
+| Scales to | The whole office through one tunnel | Individual users, each with their own session |
+
+**Analogy:**
+- **Site-to-Site** = a permanent bridge between two buildings. Everyone in building A can reach building B automatically — they don't do anything special.
+- **Client VPN** = a security door each person opens with their own badge. Each person connects individually from wherever they are.
+
+**Exam triggers:**
+- "remote employees need to access private resources in the VPC" → **Client VPN**
+- "connect entire on-premises office/data center to VPC" → **Site-to-Site VPN**
+- "quick encrypted hybrid connection, backup to Direct Connect" → **Site-to-Site VPN**
 
 - Keyword "connect hundreds of VPCs centrally, transitive routing" → **Transit Gateway**.
 - Keyword "consistent low-latency dedicated private connection to on-premises" → **Direct Connect**.
