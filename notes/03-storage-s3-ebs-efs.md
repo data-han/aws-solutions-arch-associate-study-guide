@@ -164,7 +164,26 @@ Transfer Family is a **fully managed SFTP / FTPS / FTP** (and AS2) service that 
 
 ### Snowball / Snowmobile
 
-Snowball and Snowmobile are physical devices for **offline** bulk data transfer. AWS ships you a hardware appliance, you load your data onto it locally, and then ship it back to AWS for ingestion. This is used when the dataset is so large (petabytes) or your network connection so slow that transferring over the internet would take weeks or months.
+Both are physical devices for **offline** bulk data transfer — AWS ships hardware, you load data locally, ship it back, AWS ingests it. Used when the dataset is so large or the network so slow that transferring over the internet would take weeks or months.
+
+| | Snowball Edge | Snowmobile |
+|---|---|---|
+| Form factor | Suitcase-sized appliance | A literal 45-foot shipping container on a semi-truck |
+| Capacity | ~80 TB usable per device | Up to 100 PB per truck |
+| When to use | TBs to low PBs — data center migrations, remote office transfers | Exabyte-scale — entire data center moves |
+| Multiple devices | Order several in parallel to hit higher total capacity | One truck = 100 PB |
+| Edge compute | Yes — Snowball Edge can run Lambda/EC2 locally (for remote/offline processing) | No |
+
+**The exam rule:** dataset < ~10 PB → **Snowball** (order multiple). Dataset ≥ 10 PB or an entire data center → **Snowmobile**.
+
+Also know **Snowcone** — the smallest Snow device (8 TB), fits in a backpack. For edge locations, remote sites, or disconnected environments where Snowball is too large.
+
+| Scenario | Answer |
+|---|---|
+| 50 TB migration, slow WAN | Snowball Edge |
+| 50 PB full data center move | Snowmobile |
+| Tiny remote site, no connectivity | Snowcone |
+| Ongoing scheduled online sync | DataSync |
 
 - Keyword "migrate PB of data, slow/limited network" → **Snowball**. "Ongoing scheduled online sync" → **DataSync**.
 - Keyword "on-prem app needs NFS/SMB file share backed by S3" → **File Gateway**. "Replace physical tape backups" → **Tape Gateway**.
