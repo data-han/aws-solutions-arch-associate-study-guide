@@ -270,4 +270,26 @@ Enable **DNS resolution and DNS hostnames** in your VPC settings when using VPC 
 | Cache and deliver content globally | CloudFront |
 | Static anycast IP + multi-region failover for TCP/UDP | Global Accelerator |
 | What is the first service a user's request hits? | CloudFront (if used) → ALB → EC2; IGW is transparent, never the destination |
+
+---
+
+## Practice question — 3-tier architecture SG setup
+
+**Q:** A company runs a 3-tier web application on AWS. The web tier is EC2 instances behind an internet-facing ALB. The application tier is EC2 instances in private subnets. The database tier is RDS MySQL in a private subnet. A solutions architect must configure security groups so each tier can only communicate with the adjacent tier. Which configuration is correct?
+
+**A:** Create one SG per tier and use SG references (not CIDR ranges) as inbound sources:
+
+| SG | Inbound rule | Source |
+|---|---|---|
+| SG-ALB | HTTPS 443 | 0.0.0.0/0 (internet) |
+| SG-Web | HTTP/HTTPS (app port) | SG-ALB |
+| SG-App | TCP 8080 (app port) | SG-Web |
+| SG-DB | MySQL 3306 | SG-App |
+
+**Key points:**
+- Traffic initiation flows one way: Internet → ALB → Web → App → DB
+- Use SG references as sources for internal tiers, not CIDR ranges — this ensures only the specific upstream tier can connect, not anything else in the VPC
+- SGs are **stateful**: return traffic (e.g. MySQL responses from DB back to App) is automatically allowed — no outbound rules needed
+- Outbound default (`Allow All`) is fine to leave unchanged unless the question explicitly asks to restrict it
+- If the question swaps SG for **NACL**: NACLs are stateless, so you'd need explicit outbound rules for return traffic too — common exam trick
 | Inbound traffic from internet never touches… | NAT Gateway (outbound only) or IGW directly (just a pass-through) |

@@ -1,5 +1,46 @@
 # 01 — IAM & Security (Domain 1, 30% — the biggest domain)
 
+## AWS Organizations
+
+### Structure
+
+The management account creates and owns the organization. Everything sits under a single Root.
+
+```
+Management Account (payer, org owner)
+└── Root
+    ├── OU: Production
+    │   ├── Account A  ← existing account, joined via invitation
+    │   └── Account B  ← new account, created directly from management account
+    ├── OU: Development
+    │   └── Account C
+    └── OU: Sandbox
+        └── Account D
+```
+
+- **Management account** creates the org, creates OUs, invites or creates member accounts, and is the consolidated billing payer. SCPs never apply to it.
+- **Root** is auto-created when you create the org — it's the top-level container.
+- **OUs** are folders. Nest accounts inside them to apply SCPs in bulk. OUs can be nested inside other OUs.
+- **Member accounts** are the workload accounts. SCPs can restrict what they can do.
+
+### Adding accounts
+
+**Invite an existing account** — management account sends an invitation; the existing account owner must accept. Use when the account already exists outside the org.
+
+**Create a new account** — management account creates it directly via Organizations console or API; no invitation needed. Use when spinning up a net-new account (new team, new environment). After joining, move the account into the right OU.
+
+### RI sharing and consolidated billing
+
+RI discounts are shared **org-wide automatically** — no OU configuration needed. If Account A buys an RI and Account B has matching usage, the discount applies. The management account can turn off sharing per account in billing settings.
+
+### SCPs (Service Control Policies)
+
+SCPs attach to OUs (or Root) and restrict what member accounts can do. They never grant permissions — IAM still controls actual access within each account. SCPs on the Root apply to every account in the org except the management account.
+
+Common exam pattern: deny `cloudtrail:StopLogging` at Root → enforced on all member accounts, no one can opt out.
+
+---
+
 ## IAM core
 
 IAM (Identity and Access Management) is a **global service** — identities you create (users, groups, roles) exist across all AWS regions. The core concept is that everything in AWS starts with zero permissions, and you explicitly grant access through **policies** attached to identities or resources.
@@ -208,4 +249,59 @@ IMDSv2 closes this hole by requiring a **session token** before any metadata can
 | Individual remote employees need VPN access to the VPC | AWS Client VPN |
 | Grant access based on resource tags, scale to many teams | ABAC with IAM tag conditions |
 | SCP restricts regions without breaking IAM or CloudFront | SCP with NotAction listing global services |
+| Share RI discounts across all accounts in a company | AWS Organizations with consolidated billing — sharing is automatic org-wide |
+| Enforce guardrails across all member accounts | SCPs attached to OUs |
+| Add an existing AWS account to the org | Invite it — account owner must accept |
+| Create a net-new AWS account inside the org | Create directly from management account — no invitation needed |
+
+---
+
+## AWS Organizations
+
+### Structure
+
+The management account creates and owns the organization. Everything sits under a single Root.
+
+```
+Management Account (payer, org owner)
+└── Root
+    ├── OU: Production
+    │   ├── Account A  ← existing account, joined via invitation
+    │   └── Account B  ← new account, created directly from management account
+    ├── OU: Development
+    │   └── Account C
+    └── OU: Sandbox
+        └── Account D
+```
+
+- **Management account** creates the org, creates OUs, invites or creates member accounts, and is the consolidated billing payer. SCPs never apply to it.
+- **Root** is auto-created when you create the org — it's the top-level container.
+- **OUs** are folders. You nest accounts inside them to apply SCPs in bulk. OUs can be nested inside other OUs.
+- **Member accounts** are the workload accounts. SCPs can restrict what they can do.
+
+### Adding accounts
+
+Two ways to get accounts into the org:
+
+**Invite an existing account**
+- Management account sends an invitation to the existing account's email/ID
+- Owner of that account must log in and accept
+- Use when the account already exists outside the org
+
+**Create a new account**
+- Management account creates it directly via Organizations console or API
+- No invitation needed — account is immediately a member
+- Use when spinning up a net-new account (e.g. new team, new environment)
+
+After an account joins, you move it into the right OU from the management account.
+
+### RI sharing and consolidated billing
+
+RI discounts are shared **org-wide automatically** — no OU configuration needed. If Account A buys an RI and Account B has matching usage, the discount applies. The management account can turn off sharing per account in billing settings.
+
+### SCPs
+
+SCPs attach to OUs (or Root) and restrict what member accounts can do. They never grant permissions — IAM still controls actual access within each account. SCPs on the Root apply to every account in the org except the management account.
+
+Common exam pattern: deny `cloudtrail:StopLogging` at Root → enforced on all member accounts, no one can opt out.
 | IAM grants KMS permission but access still denied | Check the KMS key policy — IAM alone is insufficient |
